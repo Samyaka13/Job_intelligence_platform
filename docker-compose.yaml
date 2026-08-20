@@ -1,0 +1,24 @@
+services:
+  postgres:
+    image: postgres:17
+    container_name: job-intelligence-postgres
+
+    environment:
+      POSTGRES_DB: job_intelligence
+      POSTGRES_USER: job_intelligence
+      POSTGRES_PASSWORD: job_intelligence_dev
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U job_intelligence -d job_intelligence"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres_data:

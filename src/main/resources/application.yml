@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: job-intelligence
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/job_intelligence
+    username: job_intelligence
+    password: job_intelligence_dev
+
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: true
+
+  flyway:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

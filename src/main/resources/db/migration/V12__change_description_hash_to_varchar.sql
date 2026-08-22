@@ -1,0 +1,2 @@
+ALTER TABLE jobs
+ALTER COLUMN description_hash TYPE VARCHAR(64);

@@ -1,0 +1,2 @@
+ALTER TABLE jobs
+ALTER COLUMN salary_currency TYPE VARCHAR(3);

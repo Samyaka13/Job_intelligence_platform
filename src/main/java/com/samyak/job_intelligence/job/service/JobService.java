@@ -4,11 +4,13 @@ import com.samyak.job_intelligence.company.domain.Company;
 import com.samyak.job_intelligence.company.service.CompanyService;
 import com.samyak.job_intelligence.job.domain.Job;
 import com.samyak.job_intelligence.job.repository.JobRepository;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
 
+@Service
 @Transactional(readOnly = true)
 public class JobService {
     private final JobRepository jobRepository;
@@ -19,6 +21,7 @@ public class JobService {
         this.companyService = companyService;
     }
 
+    @Transactional
     public Job create(Long companyId,
                       String title,
                       String normalizedTitle,

@@ -148,5 +148,4 @@ Deduplication uses multiple signals:
 
 > **Note:** To reset the local database volume and wipe development data, run `docker compose down -v`.
 
-```
-```
+

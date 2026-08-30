@@ -66,7 +66,7 @@ class JobSourceListingServiceTest {
         when(jobService.getById(1L))
                 .thenReturn(job);
 
-        when(jobSourceService.getByCode("GREENHOUSE"))
+        when(jobSourceService.getByCode("greenhouse"))
                 .thenReturn(source);
 
         when(listingRepository.existsByJobSourceIdAndExternalJobId(

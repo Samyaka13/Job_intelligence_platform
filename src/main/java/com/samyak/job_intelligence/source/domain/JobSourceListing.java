@@ -78,4 +78,11 @@ public class JobSourceListing extends AuditableEntity {
         this.lastSeenAt = now;
     }
 
+    public void refresh(String sourceUrl,JsonNode rawPayload,Instant sourcePostedAt){
+       this.sourceUrl = sourceUrl;
+       this.rawPayload = rawPayload;
+       this.sourcePostedAt = sourcePostedAt;
+       this.isActive = true;
+    }
+
 }

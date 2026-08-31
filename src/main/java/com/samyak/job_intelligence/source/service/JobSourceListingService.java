@@ -26,22 +26,26 @@ public class JobSourceListingService {
     }
 
     @Transactional
-    public JobSourceListing create(Long jobId, String sourceCode, String externalJobId, String sourceUrl, JsonNode rawPayload, Instant sourcePostedAt){
+    public JobSourceListing createOrRefresh(Long jobId, String sourceCode, String externalJobId, String sourceUrl, JsonNode rawPayload, Instant sourcePostedAt){
         Job job = jobService.getById(jobId);
         JobSource jobSource = jobSourceService.getByCode(sourceCode);
 
-        if(externalJobId != null && jobSourceListingRepository.existsByJobSourceIdAndExternalJobId(jobSource.getId(),externalJobId)){
-            throw new IllegalArgumentException(
-                    "Job source listing already exists for source "
-                            + jobSource.getCode()
-                            + " and external job ID "
-                            + externalJobId
-            );
+        if(externalJobId != null){
+            return jobSourceListingRepository.findByJobSourceIdAndExternalJobId(jobSource.getId(),externalJobId).
+                    map(existingListing -> {
+                                existingListing.refresh(sourceUrl, rawPayload, sourcePostedAt);
+                                return existingListing;
+                            }
+                    ).orElseGet(() -> {
+                        JobSourceListing jobSourceListing = new JobSourceListing(job,jobSource,externalJobId,sourceUrl,rawPayload,sourcePostedAt);
+                        return jobSourceListingRepository.save(jobSourceListing);
+                    }
+                    );
         }
 
-        JobSourceListing listing = new JobSourceListing(job,jobSource,externalJobId,sourceUrl,rawPayload,sourcePostedAt);
+        JobSourceListing newListing = new JobSourceListing(job,jobSource, null,sourceUrl,rawPayload,sourcePostedAt);
 
-        return jobSourceListingRepository.save(listing);
+        return jobSourceListingRepository.save(newListing);
     }
 
     public JobSourceListing getBySourceAndExternalJobId(String sourceCode ,String externalJobId){

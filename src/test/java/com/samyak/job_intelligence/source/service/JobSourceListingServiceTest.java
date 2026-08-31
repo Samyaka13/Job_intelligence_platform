@@ -16,7 +16,6 @@ import java.time.Instant;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.*;
 
 class JobSourceListingServiceTest {
@@ -48,14 +47,12 @@ class JobSourceListingServiceTest {
     @Test
     void shouldCreateListing() throws Exception {
 
+        // Arrange
         Job job = mock(Job.class);
 
-        JobSource source = new JobSource(
-                "GREENHOUSE",
-                "Greenhouse",
-                "ATS",
-                "https://boards.greenhouse.io"
-        );
+        JobSource source = mock(JobSource.class);
+        when(source.getId()).thenReturn(1L);
+        when(source.getCode()).thenReturn("GREENHOUSE");
 
         JsonNode payload = objectMapper.readTree(
                 "{\"id\":\"12345\",\"title\":\"Backend Engineer\"}"
@@ -69,15 +66,17 @@ class JobSourceListingServiceTest {
         when(jobSourceService.getByCode("greenhouse"))
                 .thenReturn(source);
 
-        when(listingRepository.existsByJobSourceIdAndExternalJobId(
-                any(),
-                eq("12345")
-        )).thenReturn(false);
+        // No existing listing -> create a new one
+        when(listingRepository.findByJobSourceIdAndExternalJobId(
+                1L,
+                "12345"
+        )).thenReturn(Optional.empty());
 
         when(listingRepository.save(any(JobSourceListing.class)))
                 .thenReturn(savedListing);
 
-        JobSourceListing result = listingService.create(
+        // Act
+        JobSourceListing result = listingService.createOrRefresh(
                 1L,
                 "greenhouse",
                 "12345",
@@ -86,31 +85,40 @@ class JobSourceListingServiceTest {
                 Instant.now()
         );
 
+        // Assert
         assertThat(result).isSameAs(savedListing);
 
         verify(jobService).getById(1L);
-        verify(jobSourceService).getByCode("greenhouse");
-        verify(listingRepository)
-                .existsByJobSourceIdAndExternalJobId(any(), eq("12345"));
 
-        verify(listingRepository).save(any(JobSourceListing.class));
+        verify(jobSourceService)
+                .getByCode("greenhouse");
+
+        verify(listingRepository)
+                .findByJobSourceIdAndExternalJobId(
+                        1L,
+                        "12345"
+                );
+
+        verify(listingRepository)
+                .save(any(JobSourceListing.class));
     }
 
     @Test
-    void shouldRejectDuplicateListing() throws Exception {
+    void shouldRefreshExistingListing() throws Exception {
 
+        // Arrange
         Job job = mock(Job.class);
 
-        JobSource source = new JobSource(
-                "GREENHOUSE",
-                "Greenhouse",
-                "ATS",
-                "https://boards.greenhouse.io"
-        );
+        JobSource source = mock(JobSource.class);
+        when(source.getId()).thenReturn(1L);
+        when(source.getCode()).thenReturn("GREENHOUSE");
 
         JsonNode payload = objectMapper.readTree(
                 "{\"id\":\"12345\"}"
         );
+
+        JobSourceListing existingListing =
+                mock(JobSourceListing.class);
 
         when(jobService.getById(1L))
                 .thenReturn(job);
@@ -118,24 +126,47 @@ class JobSourceListingServiceTest {
         when(jobSourceService.getByCode("GREENHOUSE"))
                 .thenReturn(source);
 
-        when(listingRepository.existsByJobSourceIdAndExternalJobId(
-                any(),
-                eq("12345")
-        )).thenReturn(true);
+        // Existing listing found -> refresh it
+        when(listingRepository.findByJobSourceIdAndExternalJobId(
+                1L,
+                "12345"
+        )).thenReturn(Optional.of(existingListing));
 
-        assertThatThrownBy(() ->
-                listingService.create(
+        Instant sourcePostedAt = Instant.now();
+
+        // Act
+        JobSourceListing result = listingService.createOrRefresh(
+                1L,
+                "GREENHOUSE",
+                "12345",
+                "https://boards.greenhouse.io/example/jobs/12345",
+                payload,
+                sourcePostedAt
+        );
+
+        // Assert
+        assertThat(result).isSameAs(existingListing);
+
+        verify(jobService)
+                .getById(1L);
+
+        verify(jobSourceService)
+                .getByCode("GREENHOUSE");
+
+        verify(listingRepository)
+                .findByJobSourceIdAndExternalJobId(
                         1L,
-                        "GREENHOUSE",
-                        "12345",
+                        "12345"
+                );
+
+        verify(existingListing)
+                .refresh(
                         "https://boards.greenhouse.io/example/jobs/12345",
                         payload,
-                        Instant.now()
-                )
-        )
-                .isInstanceOf(IllegalArgumentException.class)
-                .hasMessageContaining("Job source listing already exists");
+                        sourcePostedAt
+                );
 
+        // Should NOT create a new listing
         verify(listingRepository, never())
                 .save(any(JobSourceListing.class));
     }
@@ -143,33 +174,82 @@ class JobSourceListingServiceTest {
     @Test
     void shouldFindListingBySourceAndExternalJobId() {
 
-        JobSource source = new JobSource(
-                "GREENHOUSE",
-                "Greenhouse",
-                "ATS",
-                "https://boards.greenhouse.io"
-        );
+        // Arrange
+        JobSource source = mock(JobSource.class);
 
-        JobSourceListing listing = mock(JobSourceListing.class);
+        when(source.getId()).thenReturn(1L);
+        when(source.getCode()).thenReturn("GREENHOUSE");
+
+        JobSourceListing listing =
+                mock(JobSourceListing.class);
 
         when(jobSourceService.getByCode("greenhouse"))
                 .thenReturn(source);
 
         when(listingRepository.findByJobSourceIdAndExternalJobId(
-                any(),
-                eq("12345")
+                1L,
+                "12345"
         )).thenReturn(Optional.of(listing));
 
+        // Act
         JobSourceListing result =
                 listingService.getBySourceAndExternalJobId(
                         "greenhouse",
                         "12345"
                 );
 
+        // Assert
         assertThat(result).isSameAs(listing);
 
-        verify(jobSourceService).getByCode("greenhouse");
+        verify(jobSourceService)
+                .getByCode("greenhouse");
+
         verify(listingRepository)
-                .findByJobSourceIdAndExternalJobId(any(), eq("12345"));
+                .findByJobSourceIdAndExternalJobId(
+                        1L,
+                        "12345"
+                );
+    }
+
+    @Test
+    void shouldThrowWhenListingDoesNotExist() {
+
+        // Arrange
+        JobSource source = mock(JobSource.class);
+
+        when(source.getId()).thenReturn(1L);
+        when(source.getCode()).thenReturn("GREENHOUSE");
+
+        when(jobSourceService.getByCode("greenhouse"))
+                .thenReturn(source);
+
+        when(listingRepository.findByJobSourceIdAndExternalJobId(
+                1L,
+                "12345"
+        )).thenReturn(Optional.empty());
+
+        // Act + Assert
+        org.assertj.core.api.Assertions.assertThatThrownBy(() ->
+                        listingService.getBySourceAndExternalJobId(
+                                "greenhouse",
+                                "12345"
+                        )
+                )
+                .isInstanceOf(IllegalArgumentException.class)
+                .hasMessage(
+                        "Job source listing not found for source " +
+                                "GREENHOUSE" +
+                                " and external job ID " +
+                                "12345"
+                );
+
+        verify(jobSourceService)
+                .getByCode("greenhouse");
+
+        verify(listingRepository)
+                .findByJobSourceIdAndExternalJobId(
+                        1L,
+                        "12345"
+                );
     }
 }

@@ -37,11 +37,13 @@ public class Job extends AuditableEntity {
     @Column(nullable = false,columnDefinition = "TEXT")
     private String description;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "employment_type",nullable = false,length = 50)
-    private String employmentType;
+    private EmploymentType employmentType;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "seniority_level",nullable = false,length = 50)
-    private String seniorityLevel;
+    private SeniorityLevel seniorityLevel;
 
     @Column(name = "experience_min_years" ,precision = 4,scale = 1)
     private BigDecimal experienceMinYears;
@@ -73,8 +75,9 @@ public class Job extends AuditableEntity {
     @Column(name = "description_hash",length = 64)
     private String descriptionHash;
 
+    @Enumerated(EnumType.STRING)
     @Column(length = 30,nullable = false)
-    private String status = "ACTIVE";
+    private JobStatus status = JobStatus.ACTIVE;
 
     @Column(name = "first_seen_at", nullable = false)
     private Instant firstSeenAt;
@@ -91,8 +94,8 @@ public class Job extends AuditableEntity {
             String title,
             String normalizedTitle,
             String description,
-            String employmentType,
-            String seniorityLevel,
+            EmploymentType employmentType,
+            SeniorityLevel seniorityLevel,
             BigDecimal experienceMinYears,
             BigDecimal experienceMaxYears,
             BigDecimal salaryMin,

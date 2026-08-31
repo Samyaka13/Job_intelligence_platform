@@ -1,6 +1,7 @@
 package com.samyak.job_intelligence.source.service;
 
 import com.samyak.job_intelligence.source.domain.JobSource;
+import com.samyak.job_intelligence.source.domain.JobSourceType;
 import com.samyak.job_intelligence.source.repository.JobSourceRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +33,7 @@ class JobSourceServiceTest {
         JobSource source = new JobSource(
                 "GREENHOUSE",
                 "Greenhouse",
-                "ATS",
+                JobSourceType.ATS,
                 "https://boards.greenhouse.io"
         );
 

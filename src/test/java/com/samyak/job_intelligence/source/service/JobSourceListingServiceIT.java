@@ -2,7 +2,9 @@ package com.samyak.job_intelligence.source.service;
 
 import com.samyak.job_intelligence.company.domain.Company;
 import com.samyak.job_intelligence.company.repository.CompanyRepository;
+import com.samyak.job_intelligence.job.domain.EmploymentType;
 import com.samyak.job_intelligence.job.domain.Job;
+import com.samyak.job_intelligence.job.domain.SeniorityLevel;
 import com.samyak.job_intelligence.job.repository.JobRepository;
 import com.samyak.job_intelligence.source.domain.JobSource;
 import com.samyak.job_intelligence.source.domain.JobSourceListing;
@@ -77,8 +79,8 @@ class JobSourceListingServiceIT {
                         "Backend Engineer",
                         "backend engineer",
                         "Build backend services using Java and Spring Boot.",
-                        "FULL_TIME",
-                        "ENTRY",
+                        EmploymentType.FULL_TIME,
+                        SeniorityLevel.ENTRY,
                         BigDecimal.ZERO,
                         BigDecimal.valueOf(2),
                         null,
@@ -92,14 +94,9 @@ class JobSourceListingServiceIT {
                 )
         );
 
-      JobSource source =  jobSourceRepository.save(
-                new JobSource(
-                        "GREENHOUSE",
-                        "Greenhouse",
-                        "ATS",
-                        "https://boards.greenhouse.io"
-                )
-        );
+        JobSource source = jobSourceRepository
+                .findByCode("GREENHOUSE")
+                .orElseThrow();
 
         JobSourceListing listing = listingService.createOrRefresh(
                 job.getId(),

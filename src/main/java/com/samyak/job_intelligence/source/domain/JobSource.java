@@ -21,8 +21,9 @@ public class JobSource extends AuditableEntity {
     @Column(name = "display_name",nullable = false,length = 100)
     private String displayName;
 
+    @Enumerated(EnumType.STRING)
     @Column(name = "source_type",nullable = false,length = 50)
-    private String sourceType;
+    private JobSourceType sourceType;
 
     @Column(name = "base_url",length = 2048)
     private String baseUrl;
@@ -34,7 +35,7 @@ public class JobSource extends AuditableEntity {
         //required by JPA
     }
 
-    public JobSource(String code,String displayName,String sourceType,String baseUrl){
+    public JobSource(String code,String displayName,JobSourceType sourceType,String baseUrl){
         this.code = code;
         this.displayName = displayName;
         this.sourceType = sourceType;

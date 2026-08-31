@@ -2,7 +2,9 @@ package com.samyak.job_intelligence.job.repository;
 
 import com.samyak.job_intelligence.company.domain.Company;
 import com.samyak.job_intelligence.company.repository.CompanyRepository;
+import com.samyak.job_intelligence.job.domain.EmploymentType;
 import com.samyak.job_intelligence.job.domain.Job;
+import com.samyak.job_intelligence.job.domain.SeniorityLevel;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
@@ -61,8 +63,8 @@ class JobRepositoryIT {
                 "Backend Engineer",
                 "backend engineer",
                 "Build backend services using Java and Spring Boot.",
-                "FULL_TIME",
-                "ENTRY",
+                EmploymentType.FULL_TIME,
+                SeniorityLevel.ENTRY,
                 BigDecimal.ZERO,
                 BigDecimal.valueOf(2),
                 BigDecimal.valueOf(800000),

@@ -2,7 +2,9 @@ package com.samyak.job_intelligence.job.service;
 
 import com.samyak.job_intelligence.company.domain.Company;
 import com.samyak.job_intelligence.company.service.CompanyService;
+import com.samyak.job_intelligence.job.domain.EmploymentType;
 import com.samyak.job_intelligence.job.domain.Job;
+import com.samyak.job_intelligence.job.domain.SeniorityLevel;
 import com.samyak.job_intelligence.job.repository.JobRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,8 +28,8 @@ public class JobService {
                       String title,
                       String normalizedTitle,
                       String description,
-                      String employmentType,
-                      String seniorityLevel,
+                      EmploymentType employmentType,
+                      SeniorityLevel seniorityLevel,
                       BigDecimal experienceMinYears,
                       BigDecimal experienceMaxYears,
                       BigDecimal salaryMin,

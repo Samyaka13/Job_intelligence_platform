@@ -23,3 +23,6 @@ management:
     web:
       exposure:
         include: health,info,metrics
+job-sources:
+  greenhouse:
+    board-token: ${GREENHOUSE_BOARD_TOKEN}

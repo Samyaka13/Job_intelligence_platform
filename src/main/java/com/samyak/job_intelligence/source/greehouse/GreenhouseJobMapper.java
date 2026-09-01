@@ -1,8 +1,10 @@
 package com.samyak.job_intelligence.source.greehouse;
 
 import com.samyak.job_intelligence.source.service.RawJobListing;
+import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 
+@Component
 public class GreenhouseJobMapper {
 public RawJobListing map(JsonNode job){
     return new RawJobListing(

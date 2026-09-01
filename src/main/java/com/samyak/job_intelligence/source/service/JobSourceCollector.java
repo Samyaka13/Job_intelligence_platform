@@ -6,6 +6,6 @@ import java.util.List;
 
 public interface JobSourceCollector {
 
-    JobSource getSource();
+    String getSource();
     List<RawJobListing> collect();
 }

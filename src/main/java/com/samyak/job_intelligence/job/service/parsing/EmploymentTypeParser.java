@@ -1,7 +1,9 @@
 package com.samyak.job_intelligence.job.service.parsing;
 
 import com.samyak.job_intelligence.job.domain.EmploymentType;
+import org.springframework.stereotype.Component;
 
+@Component
 public class EmploymentTypeParser {
 
     public EmploymentType parse(String text){

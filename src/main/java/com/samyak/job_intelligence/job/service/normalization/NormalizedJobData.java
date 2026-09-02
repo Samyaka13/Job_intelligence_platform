@@ -3,6 +3,7 @@ package com.samyak.job_intelligence.job.service.normalization;
 import com.samyak.job_intelligence.job.domain.EmploymentType;
 import com.samyak.job_intelligence.job.domain.SeniorityLevel;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 
 public record NormalizedJobData(String companyName,
@@ -17,6 +18,8 @@ public record NormalizedJobData(String companyName,
                                 String normalisedApplicationUrl,
                                 EmploymentType employmentType,
                                 SeniorityLevel seniorityLevel ,
+                                BigDecimal experienceMinYears,
+                                BigDecimal experienceMaxYears,
                                 Instant postedAt
 ) {
 

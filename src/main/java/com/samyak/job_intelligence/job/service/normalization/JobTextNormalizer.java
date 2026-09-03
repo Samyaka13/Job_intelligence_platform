@@ -1,5 +1,6 @@
 package com.samyak.job_intelligence.job.service.normalization;
 
+import com.samyak.job_intelligence.common.normalization.TextNormalizationSupport;
 import com.samyak.job_intelligence.source.service.RawJobLocation;
 import org.springframework.stereotype.Component;
 
@@ -7,15 +8,6 @@ import java.util.List;
 
 @Component
 public class JobTextNormalizer {
-
-    public String normalizeTitle(String title) {
-        return normalizeWhitespaceAndCase(title);
-    }
-
-    public String normalizeCompanyName(String companyName) {
-        return normalizeWhitespaceAndCase(companyName);
-    }
-
 
     public String normalizeDescription(String description){
         if (description == null) {
@@ -31,28 +23,19 @@ public class JobTextNormalizer {
     public List<NormalizedJobLocation> normalizeJobLocations(List<RawJobLocation> rawJobLocations){
         if(rawJobLocations == null) return List.of();
         return rawJobLocations.stream().map(rawJobLocation -> new NormalizedJobLocation(
-                normalizeWhitespaceAndCase(rawJobLocation.city()),
-                normalizeWhitespaceAndCase(rawJobLocation.state()),
-                normalizeWhitespaceAndCase(rawJobLocation.country()),
-                normalizeWhitespaceAndCase(rawJobLocation.displayText())
+                TextNormalizationSupport.normalizeWhitespaceAndCase(rawJobLocation.city()),
+                TextNormalizationSupport.normalizeWhitespaceAndCase(rawJobLocation.state()),
+                TextNormalizationSupport.normalizeWhitespaceAndCase(rawJobLocation.country()),
+                TextNormalizationSupport.normalizeWhitespaceAndCase(rawJobLocation.displayText())
         )).toList();
     }
     public String normalizeSkill(String skill) {
-        return normalizeWhitespaceAndCase(skill);
+        return TextNormalizationSupport.normalizeWhitespaceAndCase(skill);
     }
 
     public String normalizeJobRequirement(String requirement) {
-        return normalizeWhitespaceAndCase(requirement);
+        return TextNormalizationSupport.normalizeWhitespaceAndCase(requirement);
     }
 
-    private String normalizeWhitespaceAndCase(String value) {
-        if (value == null) {
-            return null;
-        }
 
-        return value
-                .trim()
-                .toLowerCase()
-                .replaceAll("\\s+", " ");
-    }
 }

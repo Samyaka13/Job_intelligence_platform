@@ -1,5 +1,6 @@
 package com.samyak.job_intelligence.job.service.normalization;
 
+import com.samyak.job_intelligence.common.normalization.TextNormalizationSupport;
 import com.samyak.job_intelligence.job.domain.EmploymentType;
 import com.samyak.job_intelligence.job.domain.SeniorityLevel;
 import com.samyak.job_intelligence.job.service.parsing.*;
@@ -29,8 +30,8 @@ public class JobNormalizer {
     }
 
     public NormalizedJobData normalize(RawJobListing rawJobListing,String companyName){
-        String normalizedCompanyName = jobTextNormalizer.normalizeCompanyName(companyName);
-        String normalizedTitle = jobTextNormalizer.normalizeTitle(rawJobListing.title());
+        String normalizedCompanyName = TextNormalizationSupport.normalizeWhitespaceAndCase(companyName);
+        String normalizedTitle = TextNormalizationSupport.normalizeWhitespaceAndCase(rawJobListing.title());
         String normalizedDescription = jobTextNormalizer.normalizeDescription(rawJobListing.description());
         String normalizedSourceUrl = jobUrlNormalizer.normalize(rawJobListing.sourceUrl());
         String normalizedApplicationUrl = jobUrlNormalizer.normalize(rawJobListing.applicationUrl());

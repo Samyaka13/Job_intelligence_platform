@@ -62,9 +62,11 @@ class GreenhouseCollectorTest {
                 null,
                 null,
                 null,
+                List.of(),
                 null,
                 job1
         );
+
 
         RawJobListing listing2 = new RawJobListing(
                 "456",
@@ -72,6 +74,7 @@ class GreenhouseCollectorTest {
                 null,
                 null,
                 null,
+                List.of(),
                 null,
                 job2
         );

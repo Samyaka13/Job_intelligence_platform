@@ -5,8 +5,10 @@ import com.samyak.job_intelligence.job.domain.SeniorityLevel;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
-public record NormalizedJobData(String companyName,
+public record NormalizedJobData(
+        String companyName,
                                 String normalizedCompanyName,
                                 String title,
                                 String normalizedTitle,
@@ -20,6 +22,10 @@ public record NormalizedJobData(String companyName,
                                 SeniorityLevel seniorityLevel ,
                                 BigDecimal experienceMinYears,
                                 BigDecimal experienceMaxYears,
+                                BigDecimal salaryMin,
+                                BigDecimal salaryMax,
+                                String salaryCurrency,
+                                List<NormalizedJobLocation> locations,
                                 Instant postedAt
 ) {
 

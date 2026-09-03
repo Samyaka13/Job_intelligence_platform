@@ -30,10 +30,6 @@ public class CandidateProfile extends AuditableEntity {
     @Column(name = "preferred_locations",columnDefinition = "jsonb")
     private JsonNode preferredLocations;
 
-    @JdbcTypeCode(SqlTypes.JSON)
-    @Column(name = "preferred_work_modes",columnDefinition = "jsonb")
-    private JsonNode preferredWorkModes;
-
     @Column(name = "minimum_salary" ,precision = 12,scale = 2)
     private BigDecimal minimumSalary;
 
@@ -50,12 +46,11 @@ public class CandidateProfile extends AuditableEntity {
         //required by JPA
     }
 
-    public CandidateProfile(String name,String email,String currentLocation,JsonNode preferredLocations,JsonNode preferredWorkModes,BigDecimal minimumSalary,String minimumSalaryCurrency,boolean isActive,BigDecimal experienceYears){
+    public CandidateProfile(String name,String email,String currentLocation,JsonNode preferredLocations,BigDecimal minimumSalary,String minimumSalaryCurrency,boolean isActive,BigDecimal experienceYears){
         this.name = name;
         this.email = email;
         this.currentLocation = currentLocation;
         this.preferredLocations = preferredLocations;
-        this.preferredWorkModes = preferredWorkModes;
         this.minimumSalary = minimumSalary;
         this.minimumSalaryCurrency = minimumSalaryCurrency;
         this.isActive = isActive;

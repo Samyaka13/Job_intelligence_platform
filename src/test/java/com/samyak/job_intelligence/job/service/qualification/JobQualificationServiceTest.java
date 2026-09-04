@@ -2,6 +2,7 @@ package com.samyak.job_intelligence.job.service.qualification;
 
 import com.samyak.job_intelligence.candidate.domain.CandidateProfile;
 import com.samyak.job_intelligence.candidate.normalization.CandidateTextNormalizer;
+import com.samyak.job_intelligence.candidate.service.CandidateEmploymentTypeService;
 import com.samyak.job_intelligence.candidate.service.CandidateLocationService;
 import com.samyak.job_intelligence.job.domain.EmploymentType;
 import com.samyak.job_intelligence.job.domain.SeniorityLevel;
@@ -9,16 +10,17 @@ import com.samyak.job_intelligence.job.service.normalization.NormalizedJobData;
 import com.samyak.job_intelligence.job.service.normalization.NormalizedJobLocation;
 import org.junit.jupiter.api.Test;
 import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
 
 class JobQualificationServiceTest {
 
-    CandidateLocationService candidateLocationService = new CandidateLocationService(new CandidateTextNormalizer());
+    private final CandidateLocationService candidateLocationService = new CandidateLocationService(new CandidateTextNormalizer());
+    private final CandidateEmploymentTypeService candidateEmploymentTypeService = new CandidateEmploymentTypeService();
 
     private NormalizedJobData createJob(
             BigDecimal experienceMin,
@@ -26,7 +28,8 @@ class JobQualificationServiceTest {
             BigDecimal salaryMin,
             BigDecimal salaryMax,
             String salaryCurrency,
-            List<NormalizedJobLocation> locations
+            List<NormalizedJobLocation> locations,
+            EmploymentType employmentType
     ) {
         return new NormalizedJobData(
                 "Example Company",
@@ -39,7 +42,7 @@ class JobQualificationServiceTest {
                 "https://example.com/job/123",
                 "https://example.com/apply/123",
                 "https://example.com/apply/123",
-                EmploymentType.FULL_TIME,
+                employmentType,
                 SeniorityLevel.MID,
                 experienceMin,
                 experienceMax,
@@ -55,7 +58,8 @@ class JobQualificationServiceTest {
             JsonNode preferredLocations,
             BigDecimal minimumSalary,
             String minimumSalaryCurrency,
-            BigDecimal experienceYears
+            BigDecimal experienceYears,
+            JsonNode preferredEmploymentTypes
     ) {
         return new CandidateProfile(
                 "Samyak",
@@ -65,12 +69,16 @@ class JobQualificationServiceTest {
                 minimumSalary,
                 minimumSalaryCurrency,
                 true,
-                experienceYears
+                experienceYears,
+                preferredEmploymentTypes
         );
     }
 
+
+
     private final JobQualificationService service =
-            new JobQualificationService(candidateLocationService);
+            new JobQualificationService(candidateLocationService,candidateEmploymentTypeService);
+
 
     @Test
     void shouldRejectWhenRequiredExperienceExceedsCandidateExperience() {
@@ -105,7 +113,8 @@ class JobQualificationServiceTest {
                 null,
                 null,
                 true,
-                new BigDecimal("2")
+                new BigDecimal("2"),
+                null
         );
 
         JobQualificationResult result =
@@ -155,7 +164,8 @@ class JobQualificationServiceTest {
                 null,
                 null,
                 true,
-                new BigDecimal("2")
+                new BigDecimal("2"),
+                null
         );
 
         JobQualificationResult result =
@@ -197,7 +207,7 @@ class JobQualificationServiceTest {
                 null,
                 null,
                 true,
-                new BigDecimal("2")
+                new BigDecimal("2"),null
         );
 
         JobQualificationResult result =
@@ -239,6 +249,7 @@ class JobQualificationServiceTest {
                 null,
                 null,
                 true,
+                null,
                 null
         );
 
@@ -282,7 +293,8 @@ class JobQualificationServiceTest {
                 new BigDecimal("1200000"),
                 "INR",
                 true,
-                new BigDecimal("2")
+                new BigDecimal("2"),
+                null
         );
 
         JobQualificationResult result =
@@ -331,7 +343,7 @@ class JobQualificationServiceTest {
                 new BigDecimal("1200000"),
                 "INR",
                 true,
-                new BigDecimal("2")
+                new BigDecimal("2"),null
         );
 
         JobQualificationResult result =
@@ -374,7 +386,7 @@ class JobQualificationServiceTest {
                 new BigDecimal("1200000"),
                 "INR",
                 true,
-                new BigDecimal("2")
+                new BigDecimal("2"),null
         );
 
         JobQualificationResult result =
@@ -417,7 +429,7 @@ class JobQualificationServiceTest {
                 null,
                 null,
                 true,
-                new BigDecimal("2")
+                new BigDecimal("2"),null
         );
 
         JobQualificationResult result =
@@ -461,7 +473,7 @@ class JobQualificationServiceTest {
                 new BigDecimal("1200000"),
                 "INR",
                 true,
-                new BigDecimal("2")
+                new BigDecimal("2"),null
         );
 
         JobQualificationResult result =
@@ -515,7 +527,7 @@ class JobQualificationServiceTest {
                 new BigDecimal("1200000"),
                 "INR",
                 true,
-                new BigDecimal("2")
+                new BigDecimal("2"),null
         );
         JobQualificationResult result =
                 service.qualify(job, candidate);
@@ -565,7 +577,7 @@ class JobQualificationServiceTest {
                 null,
                 null,
                 true,
-                new BigDecimal("2")
+                new BigDecimal("2"),null
         );
 
         JobQualificationResult result =
@@ -614,7 +626,7 @@ class JobQualificationServiceTest {
                 null,
                 null,
                 true,
-                new BigDecimal("2")
+                new BigDecimal("2"),null
         );
 
         JobQualificationResult result =
@@ -676,7 +688,7 @@ class JobQualificationServiceTest {
                 null,
                 null,
                 true,
-                new BigDecimal("2")
+                new BigDecimal("2"),null
         );
 
         JobQualificationResult result =
@@ -709,14 +721,16 @@ class JobQualificationServiceTest {
                                 "india",
                                 "mumbai region"
                         )
-                )
+                ),
+                EmploymentType.FULL_TIME
         );
 
         CandidateProfile candidate = createCandidate(
                 preferredLocations,
                 new BigDecimal("1200000"),
                 "INR",
-                new BigDecimal("2")
+                new BigDecimal("2"),
+                null
         );
 
         JobQualificationResult result =
@@ -737,5 +751,129 @@ class JobQualificationServiceTest {
         assertTrue(result.rejectionReasons().contains(
                 "Job location does not match candidate preferred locations"
         ));
+    }
+
+    @Test
+    void shouldQualifyWhenJobEmploymentTypeMatchesPreference() throws Exception {
+
+        JsonNode preferredTypes = new tools.jackson.databind.ObjectMapper()
+                .readTree("""
+                ["FULL_TIME"]
+                """);
+
+        NormalizedJobData job = createJob(
+                new BigDecimal("2"),
+                new BigDecimal("5"),
+                null,
+                null,
+                null,
+                List.of(),
+                EmploymentType.FULL_TIME
+        );
+
+        CandidateProfile candidate = createCandidate(
+                null,
+                null,
+                null,
+                new BigDecimal("2"),
+                preferredTypes
+        );
+
+        JobQualificationResult result = service.qualify(job, candidate);
+
+        assertTrue(result.qualified());
+        assertTrue(result.rejectionReasons().isEmpty());
+    }
+
+    @Test
+    void shouldRejectWhenJobEmploymentTypeDoesNotMatchPreference() throws Exception {
+
+        JsonNode preferredTypes = new tools.jackson.databind.ObjectMapper()
+                .readTree("""
+                ["FULL_TIME"]
+                """);
+
+        NormalizedJobData job = createJob(
+                new BigDecimal("2"),
+                new BigDecimal("5"),
+                null,
+                null,
+                null,
+                List.of(),
+                EmploymentType.INTERNSHIP
+        );
+
+        CandidateProfile candidate = createCandidate(
+                null,
+                null,
+                null,
+                new BigDecimal("2"),
+                preferredTypes
+        );
+
+        JobQualificationResult result = service.qualify(job, candidate);
+
+        assertFalse(result.qualified());
+
+        assertTrue(result.rejectionReasons().contains(
+                "Job employment type does not match candidate preferences"
+        ));
+    }
+
+    @Test
+    void shouldQualifyWhenJobMatchesAnyPreferredEmploymentType() throws Exception {
+
+        JsonNode preferredTypes = new tools.jackson.databind.ObjectMapper()
+                .readTree("""
+                ["FULL_TIME", "CONTRACT"]
+                """);
+
+        NormalizedJobData job = createJob(
+                new BigDecimal("2"),
+                new BigDecimal("5"),
+                null,
+                null,
+                null,
+                List.of(),
+                EmploymentType.CONTRACT
+        );
+
+        CandidateProfile candidate = createCandidate(
+                null,
+                null,
+                null,
+                new BigDecimal("2"),
+                preferredTypes
+        );
+
+        JobQualificationResult result = service.qualify(job, candidate);
+
+        assertTrue(result.qualified());
+    }
+
+
+    @Test
+    void shouldQualifyWhenCandidateHasNoEmploymentTypePreference() {
+
+        NormalizedJobData job = createJob(
+                new BigDecimal("2"),
+                new BigDecimal("5"),
+                null,
+                null,
+                null,
+                List.of(),
+                EmploymentType.INTERNSHIP
+        );
+        CandidateProfile candidate = createCandidate(
+                null,
+                null,
+                null,
+                new BigDecimal("2"),
+                null
+        );
+
+        JobQualificationResult result = service.qualify(job, candidate);
+
+        assertTrue(result.qualified());
     }
 }

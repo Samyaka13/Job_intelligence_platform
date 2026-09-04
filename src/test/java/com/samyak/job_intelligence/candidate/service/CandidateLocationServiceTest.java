@@ -40,7 +40,8 @@ class CandidateLocationServiceTest {
                 null,
                 null,
                 true,
-                new java.math.BigDecimal("2")
+                new java.math.BigDecimal("2"),
+                null
         );
 
         when(candidateTextNormalizer.normalizeLocations(
@@ -68,7 +69,8 @@ class CandidateLocationServiceTest {
                 null,
                 null,
                 true,
-                new java.math.BigDecimal("2")
+                new java.math.BigDecimal("2"),
+                null
         );
 
         assertTrue(
@@ -96,7 +98,8 @@ class CandidateLocationServiceTest {
                 null,
                 null,
                 true,
-                new java.math.BigDecimal("2")
+                new java.math.BigDecimal("2"),
+                null
         );
 
         when(candidateTextNormalizer.normalizeLocations(

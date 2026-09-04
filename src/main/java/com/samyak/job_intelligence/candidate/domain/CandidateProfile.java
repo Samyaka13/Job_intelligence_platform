@@ -42,11 +42,15 @@ public class CandidateProfile extends AuditableEntity {
     @Column(name = "experience_years",precision = 4,scale = 1)
     private BigDecimal experienceYears;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "preferred_employment_types", columnDefinition = "jsonb")
+    private JsonNode preferredEmploymentTypes;
+
     protected CandidateProfile(){
         //required by JPA
     }
 
-    public CandidateProfile(String name,String email,String currentLocation,JsonNode preferredLocations,BigDecimal minimumSalary,String minimumSalaryCurrency,boolean isActive,BigDecimal experienceYears){
+    public CandidateProfile(String name,String email,String currentLocation,JsonNode preferredLocations,BigDecimal minimumSalary,String minimumSalaryCurrency,boolean isActive,BigDecimal experienceYears,JsonNode preferredEmploymentTypes){
         this.name = name;
         this.email = email;
         this.currentLocation = currentLocation;
@@ -55,5 +59,6 @@ public class CandidateProfile extends AuditableEntity {
         this.minimumSalaryCurrency = minimumSalaryCurrency;
         this.isActive = isActive;
         this.experienceYears = experienceYears;
+        this.preferredEmploymentTypes = preferredEmploymentTypes;
     }
 }

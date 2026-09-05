@@ -9,7 +9,7 @@ public interface CandidateSkillRepository extends JpaRepository<CandidateSkill,L
 
     List<CandidateSkill> findByCandidateProfileId(Long candidateProfileId);
 
-    List<CandidateSkill> findByCandidateProfileAndNormalizedSkillIn(
+    List<CandidateSkill> findByCandidateProfile_IdAndNormalizedSkillIn(
             Long candidateProfileId,
             List<String> normalizedSkills
     );

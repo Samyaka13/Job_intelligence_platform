@@ -6,9 +6,7 @@ import com.samyak.job_intelligence.job.domain.JobRequirement;
 import com.samyak.job_intelligence.job.domain.RequirementType;
 import com.samyak.job_intelligence.job.repository.JobRequirementRepository;
 import org.springframework.stereotype.Service;
-
 import java.util.*;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Service

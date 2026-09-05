@@ -7,9 +7,9 @@ import com.samyak.job_intelligence.job.domain.RequirementType;
 import com.samyak.job_intelligence.job.repository.JobRequirementRepository;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
 
 @Service
 public class SkillMatchingService {
@@ -29,14 +29,23 @@ public class SkillMatchingService {
         requirements.addAll(jobRequirementRepository.findByJobIdAndRequirementType(jobId,RequirementType.TECHNOLOGY));
 
         if(requirements.isEmpty()){
-            return new SkillMatchResult(List.of(),List.of(),0);
+            return new SkillMatchResult(List.of(),List.of(),List.of(),0,0);
         }
 
-        List<String> requiredSkills = requirements.stream().map(JobRequirement :: getNormalizedValue).distinct().toList();
+        List<SkillRequirement> skillRequirements = requirements.stream()
+                .collect(Collectors.toMap(JobRequirement::getNormalizedValue,
+                        requirement -> new SkillRequirement(requirement.getNormalizedValue(),requirement.isMandatory()
+                ),
+                        (first,second) -> new SkillRequirement(first.skill(), first.mandatory() || second.mandatory()),
+                        LinkedHashMap::new
+                        ))
+                .values().stream().toList();
+
+        List<String> requiredSkills = skillRequirements.stream().map(SkillRequirement::skill).toList();
 
         List<CandidateSkill> candidateSkills = candidateSkillRepository.findByCandidateProfile_IdAndNormalizedSkillIn(candidateProfileId,requiredSkills);
 
-        Set<String> matchedSkillSet = candidateSkills.stream().map(CandidateSkill :: getNormalizedSkill).collect(java.util.stream.Collectors.toSet());
+        Set<String> matchedSkillSet = candidateSkills.stream().map(CandidateSkill :: getNormalizedSkill).collect(Collectors.toCollection(LinkedHashSet::new));
 
         List<String> matchedSkills = requiredSkills.stream().filter(matchedSkillSet::contains).toList();
 
@@ -44,10 +53,21 @@ public class SkillMatchingService {
                 .filter(skill -> !matchedSkillSet.contains(skill))
                 .toList();
 
+        List<String> missingMandatorySkills = skillRequirements.stream()
+                .filter(requirement -> requirement.mandatory()  && !matchedSkillSet.contains(requirement.skill())
+                ).map(SkillRequirement::skill)
+                .toList();
+
+        long mandatoryRequirements = skillRequirements.stream()
+                .filter(SkillRequirement::mandatory)
+                .count();
+
         return new SkillMatchResult(
                 matchedSkills,
                 missingSkills,
-                requiredSkills.size()
+                missingMandatorySkills,
+                requiredSkills.size(),
+                (int) mandatoryRequirements
         );
     }
 }

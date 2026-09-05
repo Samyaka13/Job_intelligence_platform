@@ -2,9 +2,6 @@ package com.samyak.job_intelligence.candidate.repository;
 
 import com.samyak.job_intelligence.candidate.domain.CandidateProfile;
 import com.samyak.job_intelligence.candidate.domain.CandidateSkill;
-import com.samyak.job_intelligence.candidate.repository.CandidateSkillRepository;
-
-import com.samyak.job_intelligence.company.domain.Company;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -12,9 +9,9 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.math.BigDecimal;
@@ -29,8 +26,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class CandidateSkillRepositoryIT {
 
     @Container
-    static PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:17")
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:17")
                     .withDatabaseName("job_intelligence_test")
                     .withUsername("test")
                     .withPassword("test");

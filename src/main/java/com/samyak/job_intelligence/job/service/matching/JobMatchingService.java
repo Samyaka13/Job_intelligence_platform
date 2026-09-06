@@ -26,6 +26,7 @@ public class JobMatchingService {
         if(!jobQualificationResult.qualified()){
             return new JobMatchResult(false,
                     jobQualificationResult.rejectionReasons(),
+                    null,
                     null
                     );
         }
@@ -33,7 +34,8 @@ public class JobMatchingService {
         SkillMatchScore skillMatchScore = skillMatchScoringService.calculate(skillMatchResult);
         return new JobMatchResult(true,
                 List.of(),
-                skillMatchScore
+                skillMatchScore,
+                skillMatchResult
                 );
     }
 }

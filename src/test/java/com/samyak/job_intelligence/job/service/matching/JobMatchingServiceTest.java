@@ -81,6 +81,7 @@ class JobMatchingServiceTest {
         assertTrue(result.qualificationRejectionReasons().isEmpty());
 
         assertEquals(skillMatchScore, result.skillMatchScore());
+        assertEquals(skillMatchResult, result.skillMatchResult());
 
         verify(jobQualificationService)
                 .qualify(job, candidateProfile);
@@ -114,15 +115,18 @@ class JobMatchingServiceTest {
                 .thenReturn(qualificationResult);
 
         JobMatchResult result = service.match(input);
-
-        assertFalse(result.qualified());
-
         assertEquals(
                 List.of("Required experience exceeds candidate experience"),
                 result.qualificationRejectionReasons()
         );
 
+        assertFalse(result.qualified());
+        assertNull(result.skillMatchResult());
         assertNull(result.skillMatchScore());
+
+
+
+
 
         verify(jobQualificationService)
                 .qualify(job, candidateProfile);

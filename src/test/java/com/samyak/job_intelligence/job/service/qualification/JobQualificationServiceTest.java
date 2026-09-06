@@ -50,6 +50,7 @@ class JobQualificationServiceTest {
                 salaryMax,
                 salaryCurrency,
                 locations,
+                null,
                 null
         );
     }
@@ -102,6 +103,7 @@ class JobQualificationServiceTest {
                 null,
                 null,
                 List.of(),
+                null,
                 null
         );
 
@@ -153,6 +155,7 @@ class JobQualificationServiceTest {
                 null,
                 null,
                 List.of(),
+                null,
                 null
         );
 
@@ -196,6 +199,7 @@ class JobQualificationServiceTest {
                 null,
                 null,
                 List.of(),
+                null,
                 null
         );
 
@@ -238,6 +242,7 @@ class JobQualificationServiceTest {
                 null,
                 null,
                 List.of(),
+                null,
                 null
         );
 
@@ -282,6 +287,7 @@ class JobQualificationServiceTest {
                 new BigDecimal("1000000"),
                 "INR",
                 List.of(),
+                null,
                 null
         );
 
@@ -332,6 +338,7 @@ class JobQualificationServiceTest {
                 new BigDecimal("1200000"),
                 "INR",
                 List.of(),
+                null,
                 null
         );
 
@@ -375,6 +382,7 @@ class JobQualificationServiceTest {
                 null,
                 null,
                 List.of(),
+                null,
                 null
         );
 
@@ -418,6 +426,7 @@ class JobQualificationServiceTest {
                 new BigDecimal("1000000"),
                 "INR",
                 List.of(),
+                null,
                 null
         );
 
@@ -462,6 +471,7 @@ class JobQualificationServiceTest {
                 new BigDecimal("100000"),
                 "USD",
                 List.of(),
+                null,
                 null
         );
 
@@ -517,6 +527,7 @@ class JobQualificationServiceTest {
                                 "bangalore karnataka india"
                         )
                 ),
+                null,
                 null
         );
         CandidateProfile candidate = new CandidateProfile(
@@ -566,6 +577,7 @@ class JobQualificationServiceTest {
                 List.of(
                         new NormalizedJobLocation("mumbai","maharashtra","india","mumbai region")
                 ),
+                null,
                 null
         );
 
@@ -615,6 +627,7 @@ class JobQualificationServiceTest {
                                 "bangalore karnataka india"
                         )
                 ),
+                null,
                 null
         );
 
@@ -677,6 +690,7 @@ class JobQualificationServiceTest {
                                 "bangalore region"
                         )
                 ),
+                null,
                 null
         );
 

@@ -18,8 +18,9 @@ public class JobNormalizer {
     private final EmploymentTypeParser employmentTypeParser;
     private final SeniorityParser seniorityParser;
     private final SalaryParser salaryParser;
+    private final JobFingerprintGenerator jobFingerprintGenerator;
 
-    public JobNormalizer(JobTextNormalizer jobTextNormalizer, JobUrlNormalizer jobUrlNormalizer,DescriptionHashGenerator descriptionHashGenerator,ExperienceParser experienceParser,EmploymentTypeParser employmentTypeParser,SeniorityParser seniorityParser,SalaryParser salaryParser) {
+    public JobNormalizer(JobTextNormalizer jobTextNormalizer, JobUrlNormalizer jobUrlNormalizer,DescriptionHashGenerator descriptionHashGenerator,ExperienceParser experienceParser,EmploymentTypeParser employmentTypeParser,SeniorityParser seniorityParser,SalaryParser salaryParser,JobFingerprintGenerator jobFingerprintGenerator) {
         this.jobTextNormalizer = jobTextNormalizer;
         this.jobUrlNormalizer = jobUrlNormalizer;
         this.descriptionHashGenerator = descriptionHashGenerator;
@@ -27,6 +28,7 @@ public class JobNormalizer {
         this.employmentTypeParser = employmentTypeParser;
         this.seniorityParser = seniorityParser;
         this.salaryParser = salaryParser;
+        this.jobFingerprintGenerator = jobFingerprintGenerator;
     }
 
     public NormalizedJobData normalize(RawJobListing rawJobListing,String companyName){
@@ -41,6 +43,16 @@ public class JobNormalizer {
         SeniorityLevel seniorityLevel = seniorityParser.parse(rawJobListing.title());
         SalaryRange salaryRange = salaryParser.parse(normalizedDescription);
         List<NormalizedJobLocation> locations = jobTextNormalizer.normalizeJobLocations(rawJobListing.locations());
+        String canonicalFingerPrint = jobFingerprintGenerator.generate(
+                normalizedCompanyName,
+                normalizedTitle,
+                locations,
+                employmentType,
+                seniorityLevel,
+                experienceRange.minYears(),
+                experienceRange.maxYears()
+        );
+
         return new NormalizedJobData(companyName,
                 normalizedCompanyName,
                 rawJobListing.title(),
@@ -59,6 +71,7 @@ public class JobNormalizer {
                 salaryRange.max(),
                 salaryRange.currency(),
                 locations,
+                canonicalFingerPrint,
                 rawJobListing.postedAt());
     }
 }

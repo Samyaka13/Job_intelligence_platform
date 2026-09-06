@@ -24,7 +24,8 @@ class JobNormalizerTest {
             new ExperienceParser(),
             new EmploymentTypeParser(),
             new SeniorityParser(),
-            new SalaryParser()
+            new SalaryParser(),
+            new JobFingerprintGenerator()
     );
 
     @Test

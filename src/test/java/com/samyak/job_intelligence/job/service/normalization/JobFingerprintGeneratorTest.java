@@ -1,6 +1,11 @@
 package com.samyak.job_intelligence.job.service.normalization;
 
+import com.samyak.job_intelligence.job.domain.EmploymentType;
+import com.samyak.job_intelligence.job.domain.SeniorityLevel;
 import org.junit.jupiter.api.Test;
+
+import java.math.BigDecimal;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -15,19 +20,35 @@ class JobFingerprintGeneratorTest {
         String first = generator.generate(
                 "google",
                 "backend engineer",
-                "bengaluru",
-                "FULL_TIME",
-                "ENTRY",
-                "0-2"
+                List.of(
+                        new NormalizedJobLocation(
+                                "bengaluru",
+                                "karnataka",
+                                "india",
+                                "Bengaluru, Karnataka, India"
+                        )
+                ),
+                EmploymentType.FULL_TIME,
+                SeniorityLevel.ENTRY,
+                new BigDecimal("0"),
+                new BigDecimal("2")
         );
 
         String second = generator.generate(
                 "google",
                 "backend engineer",
-                "bengaluru",
-                "FULL_TIME",
-                "ENTRY",
-                "0-2"
+                List.of(
+                        new NormalizedJobLocation(
+                                "bengaluru",
+                                "karnataka",
+                                "india",
+                                "Bengaluru, Karnataka, India"
+                        )
+                ),
+                EmploymentType.FULL_TIME,
+                SeniorityLevel.ENTRY,
+                new BigDecimal("0"),
+                new BigDecimal("2")
         );
 
         assertThat(first)
@@ -40,19 +61,35 @@ class JobFingerprintGeneratorTest {
         String first = generator.generate(
                 "google",
                 "backend engineer",
-                "bengaluru",
-                "FULL_TIME",
-                "ENTRY",
-                "0-2"
+                List.of(
+                        new NormalizedJobLocation(
+                                "bengaluru",
+                                "karnataka",
+                                "india",
+                                "Bengaluru, Karnataka, India"
+                        )
+                ),
+                EmploymentType.FULL_TIME,
+                SeniorityLevel.ENTRY,
+                new BigDecimal("0"),
+                new BigDecimal("2")
         );
 
         String second = generator.generate(
                 "google",
                 "backend engineer",
-                "hyderabad",
-                "FULL_TIME",
-                "ENTRY",
-                "0-2"
+                List.of(
+                        new NormalizedJobLocation(
+                                "hyderabad",
+                                "telangana",
+                                "india",
+                                "Hyderabad, Telangana, India"
+                        )
+                ),
+                EmploymentType.FULL_TIME,
+                SeniorityLevel.ENTRY,
+                new BigDecimal("0"),
+                new BigDecimal("2")
         );
 
         assertThat(first)
@@ -65,10 +102,18 @@ class JobFingerprintGeneratorTest {
         String fingerprint = generator.generate(
                 "google",
                 "backend engineer",
-                "bengaluru",
-                "FULL_TIME",
-                "ENTRY",
-                "0-2"
+                List.of(
+                        new NormalizedJobLocation(
+                                "bengaluru",
+                                "karnataka",
+                                "india",
+                                "Bengaluru, Karnataka, India"
+                        )
+                ),
+                EmploymentType.FULL_TIME,
+                SeniorityLevel.ENTRY,
+                new BigDecimal("0"),
+                new BigDecimal("2")
         );
 
         assertThat(fingerprint)
@@ -83,13 +128,67 @@ class JobFingerprintGeneratorTest {
                 null,
                 "backend engineer",
                 null,
-                "FULL_TIME",
-                "ENTRY",
+                null,
+                null,
+                null,
                 null
         );
 
         assertThat(fingerprint)
                 .hasSize(64)
                 .matches("[0-9a-f]{64}");
+    }
+
+    @Test
+    void shouldGenerateSameFingerprintRegardlessOfLocationOrder() {
+
+        String first = generator.generate(
+                "google",
+                "backend engineer",
+                List.of(
+                        new NormalizedJobLocation(
+                                "bengaluru",
+                                "karnataka",
+                                "india",
+                                "Bengaluru, Karnataka, India"
+                        ),
+                        new NormalizedJobLocation(
+                                "hyderabad",
+                                "telangana",
+                                "india",
+                                "Hyderabad, Telangana, India"
+                        )
+                ),
+                EmploymentType.FULL_TIME,
+                SeniorityLevel.ENTRY,
+                new BigDecimal("0"),
+                new BigDecimal("2")
+        );
+
+        String second = generator.generate(
+                "google",
+                "backend engineer",
+                List.of(
+                        new NormalizedJobLocation(
+                                "hyderabad",
+                                "telangana",
+                                "india",
+                                "Hyderabad, Telangana, India"
+                        ),
+                        new NormalizedJobLocation(
+                                "bengaluru",
+                                "karnataka",
+                                "india",
+                                "Bengaluru, Karnataka, India"
+                        )
+                ),
+                EmploymentType.FULL_TIME,
+                SeniorityLevel.ENTRY,
+                new BigDecimal("0"),
+                new BigDecimal("2")
+        );
+
+        assertThat(first)
+                .isEqualTo(second);
     }
 }

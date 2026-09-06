@@ -8,7 +8,7 @@ import java.time.Instant;
 import java.util.List;
 
 public record NormalizedJobData(
-        String companyName,
+                                String companyName,
                                 String normalizedCompanyName,
                                 String title,
                                 String normalizedTitle,
@@ -26,6 +26,7 @@ public record NormalizedJobData(
                                 BigDecimal salaryMax,
                                 String salaryCurrency,
                                 List<NormalizedJobLocation> locations,
+                                String canonicalFingerprint,
                                 Instant postedAt
 ) {
 

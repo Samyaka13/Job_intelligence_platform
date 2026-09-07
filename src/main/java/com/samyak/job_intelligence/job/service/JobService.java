@@ -71,4 +71,7 @@ public class JobService {
     public Job getById(Long id){
        return jobRepository.findById(id).orElseThrow(() -> new IllegalArgumentException( "Job not found: " + id));
     }
+    public Job findByCanonicalFingerPrint(String canonicalFingerPrint){
+        return jobRepository.findByCanonicalFingerprint(canonicalFingerPrint).orElse(null);
+    }
 }

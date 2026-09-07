@@ -10,7 +10,7 @@ CREATE TABLE job_requirements (
 
                                   is_mandatory BOOLEAN NOT NULL DEFAULT FALSE,
 
-                                  years_required NUMERIC(4,1),
+                                   years_required NUMERIC(4,1),
 
                                   requirement_text TEXT,
 

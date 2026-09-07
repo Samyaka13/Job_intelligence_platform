@@ -3,6 +3,7 @@ package com.samyak.job_intelligence.job.service.ingestion;
 import com.samyak.job_intelligence.job.domain.EmploymentType;
 import com.samyak.job_intelligence.job.domain.Job;
 import com.samyak.job_intelligence.job.domain.SeniorityLevel;
+import com.samyak.job_intelligence.job.service.JobLocationService;
 import com.samyak.job_intelligence.job.service.JobService;
 import com.samyak.job_intelligence.job.service.normalization.JobNormalizer;
 import com.samyak.job_intelligence.job.service.normalization.NormalizedJobData;
@@ -38,6 +39,9 @@ class JobIngestionServiceTest {
 
     @Mock
     private JobSourceCollector collector;
+
+    @Mock
+    private JobLocationService jobLocationService;
 
     @Test
     void shouldCreateJobWhenFingerprintDoesNotExist() {
@@ -124,7 +128,8 @@ class JobIngestionServiceTest {
                 new JobIngestionService(
                         jobNormalizer,
                         jobService,
-                        jobSourceListingService
+                        jobSourceListingService,
+                        jobLocationService
                 );
 
         service.ingest(companyId, companyName, collector);
@@ -148,6 +153,14 @@ class JobIngestionServiceTest {
                 eq("aaaaaaaa")
         );
 
+        verify(jobSourceListingService).createOrRefresh(
+                anyLong(),
+                eq("GREENHOUSE"),
+                eq("123"),
+                eq("https://example.com/job/123"),
+                isNull(),
+                eq(rawJobListing.postedAt())
+        );
         verify(jobSourceListingService).createOrRefresh(
                 anyLong(),
                 eq("GREENHOUSE"),
@@ -226,7 +239,8 @@ class JobIngestionServiceTest {
                 new JobIngestionService(
                         jobNormalizer,
                         jobService,
-                        jobSourceListingService
+                        jobSourceListingService,
+                        jobLocationService
                 );
 
         service.ingest(companyId, companyName, collector);
@@ -259,6 +273,11 @@ class JobIngestionServiceTest {
                 eq("https://example.com/job/123"),
                 isNull(),
                 eq(rawJobListing.postedAt())
+        );
+
+        verify(jobLocationService).replaceLocations(
+                10L,
+                normalizedJob.locations()
         );
     }
 }

@@ -1,6 +1,7 @@
 package com.samyak.job_intelligence.job.service.ingestion;
 
 import com.samyak.job_intelligence.job.domain.Job;
+import com.samyak.job_intelligence.job.service.JobLocationService;
 import com.samyak.job_intelligence.job.service.JobService;
 import com.samyak.job_intelligence.job.service.normalization.JobNormalizer;
 import com.samyak.job_intelligence.job.service.normalization.NormalizedJobData;
@@ -19,12 +20,14 @@ public class JobIngestionService {
     private final JobNormalizer jobNormalizer;
     private final JobService jobService;
     private final JobSourceListingService jobSourceListingService;
+    private final JobLocationService jobLocationService;
 
 
-    public JobIngestionService(JobNormalizer jobNormalizer, JobService jobService, JobSourceListingService jobSourceListingService) {
+    public JobIngestionService(JobNormalizer jobNormalizer, JobService jobService, JobSourceListingService jobSourceListingService,JobLocationService jobLocationService) {
         this.jobNormalizer = jobNormalizer;
         this.jobService = jobService;
         this.jobSourceListingService = jobSourceListingService;
+        this.jobLocationService = jobLocationService;
     }
 
     public void ingest(Long companyId, String companyName, JobSourceCollector jobSourceCollector){
@@ -63,5 +66,6 @@ public class JobIngestionService {
         }
 
         jobSourceListingService.createOrRefresh(job.getId(),sourceCode,rawJobListing.externalJobId(),normalizedJobData.normalizedSourceUrl(), rawJobListing.rawPayload(), rawJobListing.postedAt());
+        jobLocationService.replaceLocations(job.getId(),normalizedJobData.locations());
     }
 }

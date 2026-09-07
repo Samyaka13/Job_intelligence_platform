@@ -3,6 +3,9 @@ package com.samyak.job_intelligence.job.service.ingestion;
 import com.samyak.job_intelligence.company.domain.Company;
 import com.samyak.job_intelligence.company.repository.CompanyRepository;
 import com.samyak.job_intelligence.job.domain.Job;
+import com.samyak.job_intelligence.job.domain.JobLocation;
+import com.samyak.job_intelligence.job.domain.RemoteType;
+import com.samyak.job_intelligence.job.repository.JobLocationRepository;
 import com.samyak.job_intelligence.job.repository.JobRepository;
 import com.samyak.job_intelligence.source.domain.JobSource;
 import com.samyak.job_intelligence.source.domain.JobSourceListing;
@@ -11,6 +14,7 @@ import com.samyak.job_intelligence.source.repository.JobSourceRepository;
 import com.samyak.job_intelligence.source.service.JobSourceCollector;
 import com.samyak.job_intelligence.source.service.RawJobListing;
 import com.samyak.job_intelligence.job.service.normalization.JobNormalizer;
+import com.samyak.job_intelligence.source.service.RawJobLocation;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -65,6 +69,8 @@ class JobIngestionServiceIT {
     @Autowired
     private JobNormalizer jobNormalizer;
 
+    @Autowired
+    private JobLocationRepository jobLocationRepository;
     @Test
     @Transactional
     void shouldPersistNewJobAndSourceListing() {
@@ -85,8 +91,14 @@ class JobIngestionServiceIT {
                         "Backend Engineer",
                         "Build backend services using Java and Spring Boot.",
                         "https://example.com/job/123",
-                        "https://example.com/apply/123",
-                        List.of(),
+                        "https://example.com/apply/123",List.of(
+                        new RawJobLocation(
+                                null,
+                                null,
+                                null,
+                                "Bangalore, Karnataka, India"
+                        )
+                ),
                         Instant.now(),
                         null
                 );
@@ -131,6 +143,23 @@ class JobIngestionServiceIT {
 
         assertThat(listing.getExternalJobId())
                 .isEqualTo("123");
+
+        List<JobLocation> locations =
+                jobLocationRepository.findByJobId(job.getId());
+
+        assertThat(locations)
+                .hasSize(1);
+
+        JobLocation location = locations.getFirst();
+
+        assertThat(location.getJob().getId())
+                .isEqualTo(job.getId());
+
+        assertThat(location.getDisplayText())
+                .isEqualTo("bangalore, karnataka, india");
+
+        assertThat(location.getRemoteType())
+                .isEqualTo(RemoteType.UNKNOWN);
     }
 
     @Test
@@ -154,7 +183,14 @@ class JobIngestionServiceIT {
                         "Build backend services using Java and Spring Boot.",
                         "https://example.com/job/456",
                         "https://example.com/apply/456",
-                        List.of(),
+                        List.of(
+                                new RawJobLocation(
+                                        null,
+                                        null,
+                                        null,
+                                        "Bangalore, Karnataka, India"
+                                )
+                        ),
                         Instant.now(),
                         null
                 );

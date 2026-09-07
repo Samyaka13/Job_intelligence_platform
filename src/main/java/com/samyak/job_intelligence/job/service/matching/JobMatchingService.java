@@ -13,12 +13,14 @@ public class JobMatchingService {
     private final JobQualificationService jobQualificationService;
     private final SkillMatchingService skillMatchingService;
     private final SkillMatchScoringService skillMatchScoringService;
+    private final JobOverallScoringService jobOverallScoringService;
 
 
-    public JobMatchingService(JobQualificationService jobQualificationService, SkillMatchingService skillMatchingService, SkillMatchScoringService skillMatchScoringService) {
+    public JobMatchingService(JobQualificationService jobQualificationService, SkillMatchingService skillMatchingService, SkillMatchScoringService skillMatchScoringService,JobOverallScoringService jobOverallScoringService) {
         this.jobQualificationService = jobQualificationService;
         this.skillMatchingService = skillMatchingService;
         this.skillMatchScoringService = skillMatchScoringService;
+        this.jobOverallScoringService = jobOverallScoringService;
     }
 
     public JobMatchResult match(JobMatchingInput jobMatchingInput){
@@ -27,15 +29,19 @@ public class JobMatchingService {
             return new JobMatchResult(false,
                     jobQualificationResult.rejectionReasons(),
                     null,
+                    null,
                     null
                     );
         }
         SkillMatchResult skillMatchResult = skillMatchingService.match(jobMatchingInput.candidateProfile().getId(),jobMatchingInput.jobId());
         SkillMatchScore skillMatchScore = skillMatchScoringService.calculate(skillMatchResult);
+        JobOverallScore overallScore =
+                jobOverallScoringService.calculate(skillMatchScore);
         return new JobMatchResult(true,
                 List.of(),
                 skillMatchScore,
-                skillMatchResult
+                skillMatchResult,
+                overallScore
                 );
     }
 }

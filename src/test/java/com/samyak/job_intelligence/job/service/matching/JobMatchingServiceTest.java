@@ -18,6 +18,7 @@ class JobMatchingServiceTest {
     private JobQualificationService jobQualificationService;
     private SkillMatchingService skillMatchingService;
     private SkillMatchScoringService skillMatchScoringService;
+    private JobOverallScoringService jobOverallScoringService;
 
     private JobMatchingService service;
 
@@ -26,11 +27,13 @@ class JobMatchingServiceTest {
         jobQualificationService = mock(JobQualificationService.class);
         skillMatchingService = mock(SkillMatchingService.class);
         skillMatchScoringService = mock(SkillMatchScoringService.class);
+        jobOverallScoringService = mock(JobOverallScoringService.class);
 
         service = new JobMatchingService(
                 jobQualificationService,
                 skillMatchingService,
-                skillMatchScoringService
+                skillMatchScoringService,
+                jobOverallScoringService
         );
     }
 

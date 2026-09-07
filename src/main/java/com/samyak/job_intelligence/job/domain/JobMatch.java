@@ -99,4 +99,34 @@ public class JobMatch extends AuditableEntity {
         this.evaluatedAt = evaluatedAt;
     }
 
+    public void update(
+            boolean hardQualified,
+            BigDecimal skillScore,
+            BigDecimal experienceScore,
+            BigDecimal roleScore,
+            BigDecimal locationScore,
+            BigDecimal salaryScore,
+            BigDecimal semanticScore,
+            BigDecimal finalScore,
+            String matchReasoning,
+            String llmProvider,
+            String llmModel,
+            String llmPromptVersion,
+            Instant evaluatedAt
+    ) {
+        this.hardQualified = hardQualified;
+        this.skillScore = skillScore;
+        this.experienceScore = experienceScore;
+        this.roleScore = roleScore;
+        this.locationScore = locationScore;
+        this.salaryScore = salaryScore;
+        this.semanticScore = semanticScore;
+        this.finalScore = finalScore;
+        this.matchReasoning = matchReasoning;
+        this.llmProvider = llmProvider;
+        this.llmModel = llmModel;
+        this.llmPromptVersion = llmPromptVersion;
+        this.evaluatedAt = evaluatedAt;
+    }
+
 }

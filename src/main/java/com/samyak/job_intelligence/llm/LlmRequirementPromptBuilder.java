@@ -1,4 +1,4 @@
-package com.samyak.job_intelligence.job.service.requirement;
+package com.samyak.job_intelligence.llm;
 
 import org.springframework.stereotype.Component;
 
@@ -53,6 +53,17 @@ public class LlmRequirementPromptBuilder {
 
                 10. If no actual candidate requirements can be identified, return
                     an empty requirements array.
+                
+                11. Do not extract general job-level experience requirements when they are
+                    already expressed as overall years of experience for the role. Overall
+                    experience is handled separately by the application's deterministic
+                    experience parser.
+                
+                12. Only populate requirementType=EXPERIENCE when the experience itself is
+                    a distinct candidate requirement that needs semantic interpretation.
+                
+                13. Only populate yearsRequired when a number of years is explicitly tied
+                    to the extracted requirement.
                 """;
     }
 

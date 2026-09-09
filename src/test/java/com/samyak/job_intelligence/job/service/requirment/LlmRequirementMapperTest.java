@@ -5,7 +5,7 @@ package com.samyak.job_intelligence.job.service.requirment;
 import com.samyak.job_intelligence.job.domain.RequirementType;
 import com.samyak.job_intelligence.job.service.requirement.ExtractedJobRequirement;
 import com.samyak.job_intelligence.job.service.requirement.LlmExtractedRequirement;
-import com.samyak.job_intelligence.job.service.requirement.LlmRequirementMapper;
+import com.samyak.job_intelligence.llm.LlmRequirementMapper;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;

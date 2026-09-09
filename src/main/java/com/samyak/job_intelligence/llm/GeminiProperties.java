@@ -1,4 +1,7 @@
 package com.samyak.job_intelligence.llm;
 
-public class GeminiProperties {
+import org.springframework.boot.context.properties.ConfigurationProperties;
+
+@ConfigurationProperties(prefix = "llm.gemini")
+public record GeminiProperties(String apiKey,String model) {
 }

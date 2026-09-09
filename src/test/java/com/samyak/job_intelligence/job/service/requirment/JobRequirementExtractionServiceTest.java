@@ -3,6 +3,8 @@ package com.samyak.job_intelligence.job.service.requirment;
 
 import com.samyak.job_intelligence.job.domain.RequirementType;
 import com.samyak.job_intelligence.job.service.requirement.*;
+import com.samyak.job_intelligence.llm.LlmClient;
+import com.samyak.job_intelligence.llm.LlmRequirementExtractor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;

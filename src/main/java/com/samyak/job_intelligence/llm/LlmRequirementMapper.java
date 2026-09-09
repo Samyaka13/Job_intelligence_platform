@@ -1,6 +1,8 @@
-package com.samyak.job_intelligence.job.service.requirement;
+package com.samyak.job_intelligence.llm;
 
 import com.samyak.job_intelligence.common.normalization.TextNormalizationSupport;
+import com.samyak.job_intelligence.job.service.requirement.ExtractedJobRequirement;
+import com.samyak.job_intelligence.job.service.requirement.LlmExtractedRequirement;
 import org.springframework.stereotype.Component;
 
 import java.util.List;

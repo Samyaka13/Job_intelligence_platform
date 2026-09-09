@@ -2,6 +2,8 @@ package com.samyak.job_intelligence.job.service.requirment;
 
 import com.samyak.job_intelligence.job.domain.RequirementType;
 import com.samyak.job_intelligence.job.service.requirement.*;
+import com.samyak.job_intelligence.llm.*;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -13,6 +15,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
+@Tag("llm")
 @ExtendWith(MockitoExtension.class)
 class LlmRequirementExtractorTest {
 

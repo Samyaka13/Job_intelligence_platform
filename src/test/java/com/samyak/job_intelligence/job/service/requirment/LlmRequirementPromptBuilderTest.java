@@ -1,5 +1,5 @@
 package com.samyak.job_intelligence.job.service.requirment;
-import com.samyak.job_intelligence.job.service.requirement.LlmRequirementPromptBuilder;
+import com.samyak.job_intelligence.llm.LlmRequirementPromptBuilder;
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;

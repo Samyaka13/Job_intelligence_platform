@@ -1,6 +1,6 @@
 package com.samyak.job_intelligence;
 
-import com.samyak.job_intelligence.job.service.requirement.LlmClient;
+import com.samyak.job_intelligence.llm.LlmClient;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;

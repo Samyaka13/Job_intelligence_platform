@@ -1,5 +1,6 @@
 package com.samyak.job_intelligence.job.service.requirement;
 
+import com.samyak.job_intelligence.llm.LlmRequirementExtractor;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;

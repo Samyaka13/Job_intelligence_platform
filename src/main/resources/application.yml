@@ -18,6 +18,11 @@ spring:
   flyway:
     enabled: true
 
+llm:
+    gemini:
+      api-key : ${GEMINI_API_KEY}
+      model: gemini-3.7-flash
+
 management:
   endpoints:
     web:

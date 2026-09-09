@@ -1,12 +1,13 @@
-package com.samyak.job_intelligence.job.service.requirement;
+package com.samyak.job_intelligence.llm;
 
+import com.samyak.job_intelligence.job.service.requirement.*;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 
 @Component
-public class LlmRequirementExtractor implements RequirementExtractor{
+public class LlmRequirementExtractor implements RequirementExtractor {
 
     private final LlmClient llmClient;
     private final LlmRequirementPromptBuilder llmRequirementPromptBuilder;

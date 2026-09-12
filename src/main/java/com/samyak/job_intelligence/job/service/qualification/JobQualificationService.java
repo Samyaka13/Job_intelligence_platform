@@ -1,6 +1,7 @@
 package com.samyak.job_intelligence.job.service.qualification;
 
 import com.samyak.job_intelligence.candidate.domain.CandidateProfile;
+import com.samyak.job_intelligence.candidate.normalization.CandidateTextNormalizer;
 import com.samyak.job_intelligence.candidate.service.CandidateEmploymentTypeService;
 import com.samyak.job_intelligence.candidate.service.CandidateLocationService;
 import com.samyak.job_intelligence.job.domain.EmploymentType;
@@ -17,10 +18,14 @@ import java.util.List;
 public class JobQualificationService {
     private final CandidateLocationService candidateLocationService;
     private final CandidateEmploymentTypeService candidateEmploymentTypeService;
+    private final CandidateTextNormalizer candidateTextNormalizer;
 
-    public JobQualificationService(CandidateLocationService candidateLocationService,CandidateEmploymentTypeService candidateEmploymentTypeService) {
+    public JobQualificationService(CandidateLocationService candidateLocationService,
+                                   CandidateEmploymentTypeService candidateEmploymentTypeService,
+                                   CandidateTextNormalizer candidateTextNormalizer) {
         this.candidateLocationService = candidateLocationService;
         this.candidateEmploymentTypeService = candidateEmploymentTypeService;
+        this.candidateTextNormalizer = candidateTextNormalizer;
     }
 
 
@@ -67,6 +72,10 @@ public class JobQualificationService {
                         )
                 )
                 .filter(java.util.Objects::nonNull)
+                .map(location ->
+                        candidateTextNormalizer
+                                .normalizeLocations(List.of(location))
+                                .getFirst())
                 .anyMatch(preferredLocations::contains);
     }
 

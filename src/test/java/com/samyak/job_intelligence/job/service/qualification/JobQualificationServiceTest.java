@@ -27,6 +27,8 @@ class JobQualificationServiceTest {
 
     private final CandidateEmploymentTypeService candidateEmploymentTypeService =
             new CandidateEmploymentTypeService();
+    private final CandidateTextNormalizer candidateTextNormalizer=
+            new CandidateTextNormalizer();
 
     private Job createJob(
             BigDecimal experienceMin,
@@ -102,7 +104,8 @@ class JobQualificationServiceTest {
     private final JobQualificationService service =
             new JobQualificationService(
                     candidateLocationService,
-                    candidateEmploymentTypeService
+                    candidateEmploymentTypeService,
+                    candidateTextNormalizer
             );
 
     @Test

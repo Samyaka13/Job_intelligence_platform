@@ -21,15 +21,20 @@ spring:
     enabled: true
 
 llm:
-    gemini:
-      api-key : ${GEMINI_API_KEY}
-      model: gemini-3.7-flash
+  gemini:
+    api-key: ${GEMINI_API_KEY}
+    model: gemini-3.7-flash
 
 management:
   endpoints:
     web:
       exposure:
         include: health,info,metrics
+
 job-sources:
   greenhouse:
     board-token: ${GREENHOUSE_BOARD_TOKEN}
+
+job-intelligence:
+  matching:
+    daily-cron: "0 0 2 * * *"

@@ -1,6 +1,8 @@
 package com.samyak.job_intelligence.job.service.matching;
 
 import com.samyak.job_intelligence.candidate.domain.CandidateProfile;
+import com.samyak.job_intelligence.job.domain.Job;
+import com.samyak.job_intelligence.job.domain.JobLocation;
 import com.samyak.job_intelligence.job.service.normalization.NormalizedJobData;
 import com.samyak.job_intelligence.job.service.qualification.JobQualificationResult;
 import com.samyak.job_intelligence.job.service.qualification.JobQualificationService;
@@ -40,7 +42,8 @@ class JobMatchingServiceTest {
     @Test
     void shouldCombineQualificationAndSkillMatchResults() {
 
-        NormalizedJobData job = mock(NormalizedJobData.class);
+        Job job = mock(Job.class);
+        List<JobLocation> locations = List.of();
         CandidateProfile candidateProfile = mock(CandidateProfile.class);
 
         when(candidateProfile.getId()).thenReturn(10L);
@@ -48,7 +51,7 @@ class JobMatchingServiceTest {
         JobMatchingInput input = new JobMatchingInput(
                 job,
                 candidateProfile,
-                20L
+                locations
         );
 
         JobQualificationResult qualificationResult =
@@ -69,7 +72,7 @@ class JobMatchingServiceTest {
                 false
         );
 
-        when(jobQualificationService.qualify(job, candidateProfile))
+        when(jobQualificationService.qualify(job, candidateProfile,locations))
                 .thenReturn(qualificationResult);
 
         when(skillMatchingService.match(10L, 20L))
@@ -77,6 +80,7 @@ class JobMatchingServiceTest {
 
         when(skillMatchScoringService.calculate(skillMatchResult))
                 .thenReturn(skillMatchScore);
+        when(job.getId()).thenReturn(20L);
 
         JobMatchResult result = service.match(input);
 
@@ -87,7 +91,7 @@ class JobMatchingServiceTest {
         assertEquals(skillMatchResult, result.skillMatchResult());
 
         verify(jobQualificationService)
-                .qualify(job, candidateProfile);
+                .qualify(job, candidateProfile,locations);
 
         verify(skillMatchingService)
                 .match(10L, 20L);
@@ -98,15 +102,16 @@ class JobMatchingServiceTest {
     @Test
     void shouldNotCalculateSkillMatchWhenJobFailsQualification() {
 
-        NormalizedJobData job = mock(NormalizedJobData.class);
+        Job job = mock(Job.class);
         CandidateProfile candidateProfile = mock(CandidateProfile.class);
+        List<JobLocation> locations = List.of();
 
         when(candidateProfile.getId()).thenReturn(10L);
 
         JobMatchingInput input = new JobMatchingInput(
                 job,
                 candidateProfile,
-                20L
+                locations
         );
 
         JobQualificationResult qualificationResult =
@@ -114,7 +119,7 @@ class JobMatchingServiceTest {
                         List.of("Required experience exceeds candidate experience")
                 );
 
-        when(jobQualificationService.qualify(job, candidateProfile))
+        when(jobQualificationService.qualify(job, candidateProfile,locations))
                 .thenReturn(qualificationResult);
 
         JobMatchResult result = service.match(input);
@@ -132,7 +137,7 @@ class JobMatchingServiceTest {
 
 
         verify(jobQualificationService)
-                .qualify(job, candidateProfile);
+                .qualify(job, candidateProfile,locations);
 
         verifyNoInteractions(skillMatchingService);
         verifyNoInteractions(skillMatchScoringService);
@@ -141,15 +146,16 @@ class JobMatchingServiceTest {
     @Test
     void shouldReturnZeroSkillScoreWhenQualifiedJobHasNoSkillRequirements() {
 
-        NormalizedJobData job = mock(NormalizedJobData.class);
+        Job job = mock(Job.class);
         CandidateProfile candidateProfile = mock(CandidateProfile.class);
+        List<JobLocation> locations = List.of();
 
         when(candidateProfile.getId()).thenReturn(10L);
 
         JobMatchingInput input = new JobMatchingInput(
                 job,
                 candidateProfile,
-                20L
+                locations
         );
 
         JobQualificationResult qualificationResult =
@@ -170,7 +176,8 @@ class JobMatchingServiceTest {
                 false
         );
 
-        when(jobQualificationService.qualify(job, candidateProfile))
+
+        when(jobQualificationService.qualify(job, candidateProfile,locations))
                 .thenReturn(qualificationResult);
 
         when(skillMatchingService.match(10L, 20L))
@@ -178,6 +185,7 @@ class JobMatchingServiceTest {
 
         when(skillMatchScoringService.calculate(skillMatchResult))
                 .thenReturn(skillMatchScore);
+        when(job.getId()).thenReturn(20L);
 
         JobMatchResult result = service.match(input);
 
@@ -203,7 +211,7 @@ class JobMatchingServiceTest {
         );
 
         verify(jobQualificationService)
-                .qualify(job, candidateProfile);
+                .qualify(job, candidateProfile,locations);
 
         verify(skillMatchingService)
                 .match(10L, 20L);

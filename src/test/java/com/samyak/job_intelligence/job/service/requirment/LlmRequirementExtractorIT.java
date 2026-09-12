@@ -6,6 +6,7 @@ import com.samyak.job_intelligence.job.domain.RequirementType;
 import com.samyak.job_intelligence.job.service.requirement.ExtractedJobRequirement;
 import com.samyak.job_intelligence.llm.LlmRequirementExtractor;
 import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -14,6 +15,7 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+@Tag("llm")
 @SpringBootTest
 class LlmRequirementExtractorIT {
 

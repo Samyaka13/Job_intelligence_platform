@@ -82,7 +82,12 @@ public class JobSourceListing extends AuditableEntity {
        this.sourceUrl = sourceUrl;
        this.rawPayload = rawPayload;
        this.sourcePostedAt = sourcePostedAt;
+       this.lastSeenAt = Instant.now();
        this.isActive = true;
+    }
+
+    public void deactivate(){
+       this.isActive = false;
     }
 
 }

@@ -1,11 +1,15 @@
 package com.samyak.job_intelligence.job.service.matching;
 
 import com.samyak.job_intelligence.candidate.domain.CandidateProfile;
+import com.samyak.job_intelligence.job.domain.Job;
+import com.samyak.job_intelligence.job.domain.JobLocation;
 import com.samyak.job_intelligence.job.service.normalization.NormalizedJobData;
 
+import java.util.List;
+
 public record JobMatchingInput(
-        NormalizedJobData job,
+        Job job,
         CandidateProfile candidateProfile,
-        Long jobId
+        List<JobLocation> locations
 ) {
 }

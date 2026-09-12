@@ -24,7 +24,7 @@ public class JobMatchingService {
     }
 
     public JobMatchResult match(JobMatchingInput jobMatchingInput){
-        JobQualificationResult jobQualificationResult = jobQualificationService.qualify(jobMatchingInput.job(),jobMatchingInput.candidateProfile());
+        JobQualificationResult jobQualificationResult = jobQualificationService.qualify(jobMatchingInput.job(),jobMatchingInput.candidateProfile(),jobMatchingInput.locations());
         if(!jobQualificationResult.qualified()){
             return new JobMatchResult(false,
                     jobQualificationResult.rejectionReasons(),
@@ -33,7 +33,7 @@ public class JobMatchingService {
                     null
                     );
         }
-        SkillMatchResult skillMatchResult = skillMatchingService.match(jobMatchingInput.candidateProfile().getId(),jobMatchingInput.jobId());
+        SkillMatchResult skillMatchResult = skillMatchingService.match(jobMatchingInput.candidateProfile().getId(),jobMatchingInput.job().getId());
         SkillMatchScore skillMatchScore = skillMatchScoringService.calculate(skillMatchResult);
         JobOverallScore overallScore =
                 jobOverallScoringService.calculate(skillMatchScore);

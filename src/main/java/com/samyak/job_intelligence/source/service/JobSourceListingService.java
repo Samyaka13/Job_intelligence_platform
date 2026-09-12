@@ -11,6 +11,8 @@ import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.JsonNode;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.Set;
 
 @Service
 @Transactional(readOnly = true)
@@ -55,5 +57,21 @@ public class JobSourceListingService {
                 + " and external job ID "
                 + externalJobId));
 
+    }
+
+    @Transactional
+    public int deactivateMissingListings(String sourceCode, Set<String> seenExternalJobIds){
+        JobSource jobSource = jobSourceService.getByCode(sourceCode);
+
+        List<JobSourceListing> activeListings = jobSourceListingRepository.findByJobSourceIdAndIsActiveTrue(jobSource.getId());
+        int deactivated = 0;
+        for(JobSourceListing listing : activeListings){
+            String externalJobId = listing.getExternalJobId();
+            if(externalJobId != null && !seenExternalJobIds.contains(externalJobId)){
+                listing.deactivate();
+                deactivated++;
+            }
+        }
+        return deactivated;
     }
 }

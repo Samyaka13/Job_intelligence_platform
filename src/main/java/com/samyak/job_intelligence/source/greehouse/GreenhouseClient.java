@@ -11,6 +11,11 @@ public class GreenhouseClient {
     public GreenhouseClient(RestClient.Builder restClientBuilder,GreenhouseProperties greenhouseProperties){
         this.restClient = restClientBuilder.baseUrl("https://boards-api.greenhouse.io").build();
         this.greenhouseProperties = greenhouseProperties;
+        System.out.println("GREENHOUSE_BOARD_TOKEN from OS: "
+                + System.getenv("GREENHOUSE_BOARD_TOKEN"));
+
+        System.out.println("GREENHOUSE_BOARD_TOKEN from Spring: "
+                + greenhouseProperties.boardToken());
     }
 
     public GreenhouseJobsResponse getJobs(){

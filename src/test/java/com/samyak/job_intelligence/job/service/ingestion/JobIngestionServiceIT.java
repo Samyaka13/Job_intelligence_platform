@@ -10,6 +10,7 @@ import com.samyak.job_intelligence.job.service.requirement.ExtractedJobRequireme
 import com.samyak.job_intelligence.job.service.requirement.JobRequirementExtractionService;
 import com.samyak.job_intelligence.source.domain.JobSource;
 import com.samyak.job_intelligence.source.domain.JobSourceListing;
+import com.samyak.job_intelligence.source.greehouse.GreenhouseCollector;
 import com.samyak.job_intelligence.source.repository.JobSourceListingRepository;
 import com.samyak.job_intelligence.source.repository.JobSourceRepository;
 import com.samyak.job_intelligence.source.service.JobSourceCollector;
@@ -67,7 +68,7 @@ class JobIngestionServiceIT {
     private JobSourceListingRepository jobSourceListingRepository;
 
     @MockitoBean
-    private JobSourceCollector collector;
+    private GreenhouseCollector collector;
 
     @Autowired
     private JobNormalizer jobNormalizer;

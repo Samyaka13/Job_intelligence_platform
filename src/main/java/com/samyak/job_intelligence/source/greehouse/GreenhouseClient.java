@@ -20,7 +20,10 @@ public class GreenhouseClient {
 
     public GreenhouseJobsResponse getJobs(){
         return restClient.get()
-                .uri("/v1/boards/{boardToken}/jobs",greenhouseProperties.boardToken())
+                .uri(uriBuilder -> uriBuilder
+                        .path("/v1/boards/{boardToken}/jobs")
+                        .queryParam("content", true)
+                        .build(greenhouseProperties.boardToken()))
                 .retrieve()
                 .body(GreenhouseJobsResponse.class);
 

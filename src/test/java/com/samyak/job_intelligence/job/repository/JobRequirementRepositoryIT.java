@@ -15,9 +15,10 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.transaction.annotation.Transactional;
-import org.testcontainers.containers.PostgreSQLContainer;
+
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.math.BigDecimal;
@@ -32,8 +33,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 class JobRequirementRepositoryIT {
 
     @Container
-    static PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:17")
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:17")
                     .withDatabaseName("job_intelligence_test")
                     .withUsername("test")
                     .withPassword("test");

@@ -1,17 +1,5 @@
 package com.samyak.job_intelligence.job.service.ingestion;
 
-import com.samyak.job_intelligence.job.domain.EmploymentType;
-import com.samyak.job_intelligence.job.domain.Job;
-import com.samyak.job_intelligence.job.domain.RequirementType;
-import com.samyak.job_intelligence.job.domain.SeniorityLevel;
-import com.samyak.job_intelligence.job.service.JobLocationService;
-import com.samyak.job_intelligence.job.service.JobService;
-import com.samyak.job_intelligence.job.service.normalization.JobNormalizer;
-import com.samyak.job_intelligence.job.service.normalization.NormalizedJobData;
-import com.samyak.job_intelligence.job.service.requirement.ExtractedJobRequirement;
-import com.samyak.job_intelligence.job.service.requirement.JobRequirementExtractionService;
-import com.samyak.job_intelligence.job.service.requirement.JobRequirementService;
-import com.samyak.job_intelligence.source.domain.JobSourceListing;
 import com.samyak.job_intelligence.source.service.JobSourceCollector;
 import com.samyak.job_intelligence.source.service.JobSourceListingService;
 import com.samyak.job_intelligence.source.service.RawJobListing;
@@ -20,7 +8,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
 
@@ -32,10 +19,7 @@ import static org.mockito.Mockito.*;
 class JobIngestionServiceTest {
 
     @Mock
-    private JobNormalizer jobNormalizer;
-
-    @Mock
-    private JobService jobService;
+    private JobIngestionItemService jobIngestionItemService;
 
     @Mock
     private JobSourceListingService jobSourceListingService;
@@ -43,22 +27,14 @@ class JobIngestionServiceTest {
     @Mock
     private JobSourceCollector collector;
 
-    @Mock
-    private JobLocationService jobLocationService;
-
-    @Mock
-    private JobRequirementExtractionService jobRequirementExtractionService;
-
-    @Mock
-    private JobRequirementService jobRequirementService;
 
     @Test
-    void shouldCreateJobWhenFingerprintDoesNotExist() {
+    void shouldCountCreatedAndUpdatedJobs() {
 
         Long companyId = 1L;
         String companyName = "Google";
 
-        RawJobListing rawJobListing =
+        RawJobListing listing1 =
                 new RawJobListing(
                         "123",
                         "Backend Engineer",
@@ -70,259 +46,47 @@ class JobIngestionServiceTest {
                         null
                 );
 
-        NormalizedJobData normalizedJob =
-                new NormalizedJobData(
-                        companyName,
-                        "google",
-                        "Backend Engineer",
-                        "backend engineer",
-                        "Build backend services.",
-                        "aaaaaaaa",
-                        rawJobListing.sourceUrl(),
-                        "https://example.com/job/123",
-                        rawJobListing.applicationUrl(),
-                        "https://example.com/apply/123",
-                        EmploymentType.FULL_TIME,
-                        SeniorityLevel.ENTRY,
-                        BigDecimal.ZERO,
-                        BigDecimal.valueOf(2),
-                        BigDecimal.valueOf(800000),
-                        BigDecimal.valueOf(1200000),
-                        "INR",
-                        List.of(),
-                        "fingerprint-123",
-                        rawJobListing.postedAt()
-                );
-
-        Job job = mock(Job.class);
-
-        when(collector.getSource())
-                .thenReturn("GREENHOUSE");
-
-        when(collector.collect())
-                .thenReturn(List.of(rawJobListing));
-
-        when(jobNormalizer.normalize(rawJobListing, companyName))
-                .thenReturn(normalizedJob);
-
-        when(jobService.findByCanonicalFingerPrint("fingerprint-123"))
-                .thenReturn(null);
-
-        when(jobService.create(
-                eq(companyId),
-                eq("Backend Engineer"),
-                eq("backend engineer"),
-                eq("Build backend services."),
-                eq(EmploymentType.FULL_TIME),
-                eq(SeniorityLevel.ENTRY),
-                eq(BigDecimal.ZERO),
-                eq(BigDecimal.valueOf(2)),
-                eq(BigDecimal.valueOf(800000)),
-                eq(BigDecimal.valueOf(1200000)),
-                eq("INR"),
-                eq(normalizedJob.postedAt()),
-                isNull(),
-                eq("https://example.com/apply/123"),
-                eq("fingerprint-123"),
-                eq("aaaaaaaa")
-        )).thenReturn(job);
-
-        when(jobSourceListingService.createOrRefresh(
-                anyLong(),
-                eq("GREENHOUSE"),
-                eq("123"),
-                eq("https://example.com/job/123"),
-                isNull(),
-                eq(rawJobListing.postedAt())
-        )).thenReturn(mock(JobSourceListing.class));
-
-        when(jobSourceListingService.deactivateMissingListings(
-                eq("GREENHOUSE"),
-                anySet()
-        )).thenReturn(0);
-
-        List<ExtractedJobRequirement> extractedRequirements =
-                List.of(
-                        new ExtractedJobRequirement(
-                                RequirementType.TECHNOLOGY,
-                                "Java",
-                                "java",
-                                true,
-                                null,
-                                "Java is required."
-                        ),
-                        new ExtractedJobRequirement(
-                                RequirementType.TECHNOLOGY,
-                                "Kafka",
-                                "kafka",
-                                false,
-                                null,
-                                "Kafka is a plus."
-                        )
-                );
-
-        when(jobRequirementExtractionService.extract(
-                normalizedJob.description()
-        )).thenReturn(extractedRequirements);
-
-        JobIngestionService service =
-                new JobIngestionService(
-                        jobNormalizer,
-                        jobService,
-                        jobSourceListingService,
-                        jobLocationService,
-                        jobRequirementExtractionService,
-                        jobRequirementService
-                );
-
-        JobIngestionResult result =
-                service.ingest(
-                        companyId,
-                        companyName,
-                        collector
-                );
-
-        assertThat(result.collected())
-                .isEqualTo(1);
-
-        assertThat(result.created())
-                .isEqualTo(1);
-
-        assertThat(result.updated())
-                .isEqualTo(0);
-
-        assertThat(result.deactivated())
-                .isEqualTo(0);
-
-        verify(jobService).create(
-                eq(companyId),
-                eq("Backend Engineer"),
-                eq("backend engineer"),
-                eq("Build backend services."),
-                eq(EmploymentType.FULL_TIME),
-                eq(SeniorityLevel.ENTRY),
-                eq(BigDecimal.ZERO),
-                eq(BigDecimal.valueOf(2)),
-                eq(BigDecimal.valueOf(800000)),
-                eq(BigDecimal.valueOf(1200000)),
-                eq("INR"),
-                eq(normalizedJob.postedAt()),
-                isNull(),
-                eq("https://example.com/apply/123"),
-                eq("fingerprint-123"),
-                eq("aaaaaaaa")
-        );
-
-        verify(jobSourceListingService).createOrRefresh(
-                anyLong(),
-                eq("GREENHOUSE"),
-                eq("123"),
-                eq("https://example.com/job/123"),
-                isNull(),
-                eq(rawJobListing.postedAt())
-        );
-
-        verify(jobSourceListingService)
-                .deactivateMissingListings(
-                        eq("GREENHOUSE"),
-                        anySet()
-                );
-
-        verify(jobRequirementExtractionService).extract(
-                normalizedJob.description()
-        );
-
-        verify(jobRequirementService).replaceRequirements(
-                job.getId(),
-                extractedRequirements
-        );
-    }
-
-    @Test
-    void shouldReuseExistingJobWhenFingerprintExists() {
-
-        Long companyId = 1L;
-        String companyName = "Google";
-
-        RawJobListing rawJobListing =
+        RawJobListing listing2 =
                 new RawJobListing(
-                        "123",
-                        "Backend Engineer",
-                        "Build backend services.",
-                        "https://example.com/job/123",
-                        "https://example.com/apply/123",
+                        "456",
+                        "Java Engineer",
+                        "Build Java services.",
+                        "https://example.com/job/456",
+                        "https://example.com/apply/456",
                         List.of(),
                         Instant.now(),
                         null
                 );
 
-        NormalizedJobData normalizedJob =
-                new NormalizedJobData(
-                        companyName,
-                        "google",
-                        "Backend Engineer",
-                        "backend engineer",
-                        "Build backend services.",
-                        "aaaaaaaa",
-                        rawJobListing.sourceUrl(),
-                        "https://example.com/job/123",
-                        rawJobListing.applicationUrl(),
-                        "https://example.com/apply/123",
-                        EmploymentType.FULL_TIME,
-                        SeniorityLevel.ENTRY,
-                        BigDecimal.ZERO,
-                        BigDecimal.valueOf(2),
-                        BigDecimal.valueOf(800000),
-                        BigDecimal.valueOf(1200000),
-                        "INR",
-                        List.of(),
-                        "fingerprint-123",
-                        rawJobListing.postedAt()
-                );
-
-        Job existingJob = mock(Job.class);
-
-        when(existingJob.getId())
-                .thenReturn(10L);
-
         when(collector.getSource())
                 .thenReturn("GREENHOUSE");
 
         when(collector.collect())
-                .thenReturn(List.of(rawJobListing));
+                .thenReturn(List.of(listing1, listing2));
 
-        when(jobNormalizer.normalize(rawJobListing, companyName))
-                .thenReturn(normalizedJob);
-
-        when(jobService.findByCanonicalFingerPrint("fingerprint-123"))
-                .thenReturn(existingJob);
-
-        when(jobSourceListingService.createOrRefresh(
-                eq(10L),
+        when(jobIngestionItemService.ingestListing(
+                eq(companyId),
+                eq(companyName),
                 eq("GREENHOUSE"),
-                eq("123"),
-                eq("https://example.com/job/123"),
-                isNull(),
-                eq(rawJobListing.postedAt())
-        )).thenReturn(mock(JobSourceListing.class));
+                same(listing1)
+        )).thenReturn(true);
+
+        when(jobIngestionItemService.ingestListing(
+                eq(companyId),
+                eq(companyName),
+                eq("GREENHOUSE"),
+                same(listing2)
+        )).thenReturn(false);
 
         when(jobSourceListingService.deactivateMissingListings(
                 eq("GREENHOUSE"),
                 anySet()
         )).thenReturn(0);
 
-        when(jobRequirementExtractionService.extract(
-                normalizedJob.description()
-        )).thenReturn(List.of());
-
         JobIngestionService service =
                 new JobIngestionService(
-                        jobNormalizer,
-                        jobService,
-                        jobSourceListingService,
-                        jobLocationService,
-                        jobRequirementExtractionService,
-                        jobRequirementService
+                        jobIngestionItemService,
+                        jobSourceListingService
                 );
 
         JobIngestionResult result =
@@ -333,64 +97,44 @@ class JobIngestionServiceTest {
                 );
 
         assertThat(result.collected())
-                .isEqualTo(1);
+                .isEqualTo(2);
 
         assertThat(result.created())
-                .isEqualTo(0);
+                .isEqualTo(1);
 
         assertThat(result.updated())
                 .isEqualTo(1);
 
+        assertThat(result.failed())
+                .isEqualTo(0);
+
         assertThat(result.deactivated())
                 .isEqualTo(0);
 
-        verify(existingJob)
-                .markSeen(any(Instant.class));
+        verify(jobIngestionItemService)
+                .ingestListing(
+                        companyId,
+                        companyName,
+                        "GREENHOUSE",
+                        listing1
+                );
 
-        verify(jobService, never()).create(
-                anyLong(),
-                anyString(),
-                anyString(),
-                anyString(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                any(),
-                anyString(),
-                any(),
-                any(),
-                anyString(),
-                anyString(),
-                anyString()
-        );
-
-        verify(jobSourceListingService).createOrRefresh(
-                eq(10L),
-                eq("GREENHOUSE"),
-                eq("123"),
-                eq("https://example.com/job/123"),
-                isNull(),
-                eq(rawJobListing.postedAt())
-        );
+        verify(jobIngestionItemService)
+                .ingestListing(
+                        companyId,
+                        companyName,
+                        "GREENHOUSE",
+                        listing2
+                );
 
         verify(jobSourceListingService)
                 .deactivateMissingListings(
                         eq("GREENHOUSE"),
                         anySet()
                 );
-
-        verify(jobLocationService).replaceLocations(
-                10L,
-                normalizedJob.locations()
-        );
-
-        verify(jobRequirementService).replaceRequirements(
-                eq(10L),
-                eq(List.of())
-        );
     }
+
+
     @Test
     void shouldContinueProcessingWhenOneListingFails() {
 
@@ -433,158 +177,53 @@ class JobIngestionServiceTest {
                         null
                 );
 
-        NormalizedJobData normalized1 =
-                new NormalizedJobData(
-                        companyName,
-                        "google",
-                        "Backend Engineer",
-                        "backend engineer",
-                        "Build backend services.",
-                        "hash-101",
-                        listing1.sourceUrl(),
-                        listing1.sourceUrl(),
-                        listing1.applicationUrl(),
-                        listing1.applicationUrl(),
-                        EmploymentType.FULL_TIME,
-                        SeniorityLevel.ENTRY,
-                        BigDecimal.ZERO,
-                        BigDecimal.valueOf(2),
-                        BigDecimal.valueOf(800000),
-                        BigDecimal.valueOf(1200000),
-                        "INR",
-                        List.of(),
-                        "fingerprint-101",
-                        listing1.postedAt()
-                );
-
-        NormalizedJobData normalized3 =
-                new NormalizedJobData(
-                        companyName,
-                        "google",
-                        "Platform Engineer",
-                        "platform engineer",
-                        "Build platform services.",
-                        "hash-103",
-                        listing3.sourceUrl(),
-                        listing3.sourceUrl(),
-                        listing3.applicationUrl(),
-                        listing3.applicationUrl(),
-                        EmploymentType.FULL_TIME,
-                        SeniorityLevel.ENTRY,
-                        BigDecimal.ZERO,
-                        BigDecimal.valueOf(2),
-                        BigDecimal.valueOf(800000),
-                        BigDecimal.valueOf(1200000),
-                        "INR",
-                        List.of(),
-                        "fingerprint-103",
-                        listing3.postedAt()
-                );
-
-        Job job1 = mock(Job.class);
-        Job job3 = mock(Job.class);
-
         when(collector.getSource())
                 .thenReturn("GREENHOUSE");
 
         when(collector.collect())
-                .thenReturn(List.of(
-                        listing1,
-                        listing2,
-                        listing3
-                ));
+                .thenReturn(
+                        List.of(
+                                listing1,
+                                listing2,
+                                listing3
+                        )
+                );
 
-        // Listing 1 succeeds
-        when(jobNormalizer.normalize(listing1, companyName))
-                .thenReturn(normalized1);
+        // Listing 1 succeeds and creates a job
+        when(jobIngestionItemService.ingestListing(
+                eq(companyId),
+                eq(companyName),
+                eq("GREENHOUSE"),
+                same(listing1)
+        )).thenReturn(true);
 
         // Listing 2 fails
-        when(jobNormalizer.normalize(listing2, companyName))
-                .thenThrow(new RuntimeException("Normalization failed"));
-
-        // Listing 3 succeeds
-        when(jobNormalizer.normalize(listing3, companyName))
-                .thenReturn(normalized3);
-
-        // Both successful listings are new jobs
-        when(jobService.findByCanonicalFingerPrint("fingerprint-101"))
-                .thenReturn(null);
-
-        when(jobService.findByCanonicalFingerPrint("fingerprint-103"))
-                .thenReturn(null);
-
-        when(jobService.create(
+        when(jobIngestionItemService.ingestListing(
                 eq(companyId),
-                eq("Backend Engineer"),
-                eq("backend engineer"),
-                eq("Build backend services."),
-                eq(EmploymentType.FULL_TIME),
-                eq(SeniorityLevel.ENTRY),
-                eq(BigDecimal.ZERO),
-                eq(BigDecimal.valueOf(2)),
-                eq(BigDecimal.valueOf(800000)),
-                eq(BigDecimal.valueOf(1200000)),
-                eq("INR"),
-                eq(normalized1.postedAt()),
-                isNull(),
-                eq("https://example.com/apply/101"),
-                eq("fingerprint-101"),
-                eq("hash-101")
-        )).thenReturn(job1);
+                eq(companyName),
+                eq("GREENHOUSE"),
+                same(listing2)
+        )).thenThrow(
+                new RuntimeException("Normalization failed")
+        );
 
-        when(jobService.create(
+        // Listing 3 succeeds and creates a job
+        when(jobIngestionItemService.ingestListing(
                 eq(companyId),
-                eq("Platform Engineer"),
-                eq("platform engineer"),
-                eq("Build platform services."),
-                eq(EmploymentType.FULL_TIME),
-                eq(SeniorityLevel.ENTRY),
-                eq(BigDecimal.ZERO),
-                eq(BigDecimal.valueOf(2)),
-                eq(BigDecimal.valueOf(800000)),
-                eq(BigDecimal.valueOf(1200000)),
-                eq("INR"),
-                eq(normalized3.postedAt()),
-                isNull(),
-                eq("https://example.com/apply/103"),
-                eq("fingerprint-103"),
-                eq("hash-103")
-        )).thenReturn(job3);
-
-        when(jobSourceListingService.createOrRefresh(
-                anyLong(),
+                eq(companyName),
                 eq("GREENHOUSE"),
-                eq("101"),
-                eq("https://example.com/job/101"),
-                isNull(),
-                eq(listing1.postedAt())
-        )).thenReturn(mock(JobSourceListing.class));
-
-        when(jobSourceListingService.createOrRefresh(
-                anyLong(),
-                eq("GREENHOUSE"),
-                eq("103"),
-                eq("https://example.com/job/103"),
-                isNull(),
-                eq(listing3.postedAt())
-        )).thenReturn(mock(JobSourceListing.class));
+                same(listing3)
+        )).thenReturn(true);
 
         when(jobSourceListingService.deactivateMissingListings(
                 eq("GREENHOUSE"),
                 anySet()
         )).thenReturn(0);
 
-        when(jobRequirementExtractionService.extract(anyString()))
-                .thenReturn(List.of());
-
         JobIngestionService service =
                 new JobIngestionService(
-                        jobNormalizer,
-                        jobService,
-                        jobSourceListingService,
-                        jobLocationService,
-                        jobRequirementExtractionService,
-                        jobRequirementService
+                        jobIngestionItemService,
+                        jobSourceListingService
                 );
 
         JobIngestionResult result =
@@ -594,67 +233,45 @@ class JobIngestionServiceTest {
                         collector
                 );
 
-        // 3 listings were collected
         assertThat(result.collected())
                 .isEqualTo(3);
 
-        // Listing 1 + listing 3 succeeded
         assertThat(result.created())
                 .isEqualTo(2);
 
         assertThat(result.updated())
                 .isEqualTo(0);
 
-        // Listing 2 failed
         assertThat(result.failed())
                 .isEqualTo(1);
 
         assertThat(result.deactivated())
                 .isEqualTo(0);
 
-        // Listing 1 was processed
-        verify(jobService).create(
-                eq(companyId),
-                eq("Backend Engineer"),
-                eq("backend engineer"),
-                eq("Build backend services."),
-                eq(EmploymentType.FULL_TIME),
-                eq(SeniorityLevel.ENTRY),
-                eq(BigDecimal.ZERO),
-                eq(BigDecimal.valueOf(2)),
-                eq(BigDecimal.valueOf(800000)),
-                eq(BigDecimal.valueOf(1200000)),
-                eq("INR"),
-                eq(normalized1.postedAt()),
-                isNull(),
-                eq("https://example.com/apply/101"),
-                eq("fingerprint-101"),
-                eq("hash-101")
-        );
+        // All three listings were attempted
+        verify(jobIngestionItemService)
+                .ingestListing(
+                        companyId,
+                        companyName,
+                        "GREENHOUSE",
+                        listing1
+                );
 
-        // Listing 3 was also processed despite listing 2 failing
-        verify(jobService).create(
-                eq(companyId),
-                eq("Platform Engineer"),
-                eq("platform engineer"),
-                eq("Build platform services."),
-                eq(EmploymentType.FULL_TIME),
-                eq(SeniorityLevel.ENTRY),
-                eq(BigDecimal.ZERO),
-                eq(BigDecimal.valueOf(2)),
-                eq(BigDecimal.valueOf(800000)),
-                eq(BigDecimal.valueOf(1200000)),
-                eq("INR"),
-                eq(normalized3.postedAt()),
-                isNull(),
-                eq("https://example.com/apply/103"),
-                eq("fingerprint-103"),
-                eq("hash-103")
-        );
+        verify(jobIngestionItemService)
+                .ingestListing(
+                        companyId,
+                        companyName,
+                        "GREENHOUSE",
+                        listing2
+                );
 
-        // Failed listing must not continue into persistence
-        verify(jobService, never())
-                .findByCanonicalFingerPrint("fingerprint-102");
+        verify(jobIngestionItemService)
+                .ingestListing(
+                        companyId,
+                        companyName,
+                        "GREENHOUSE",
+                        listing3
+                );
 
         // Deactivation happens once after the whole batch
         verify(jobSourceListingService)
@@ -662,5 +279,68 @@ class JobIngestionServiceTest {
                         eq("GREENHOUSE"),
                         anySet()
                 );
+    }
+
+
+    @Test
+    void shouldCountUpdatedJobWhenItemServiceReturnsFalse() {
+
+        Long companyId = 1L;
+        String companyName = "Google";
+
+        RawJobListing listing =
+                new RawJobListing(
+                        "123",
+                        "Backend Engineer",
+                        "Build backend services.",
+                        "https://example.com/job/123",
+                        "https://example.com/apply/123",
+                        List.of(),
+                        Instant.now(),
+                        null
+                );
+
+        when(collector.getSource())
+                .thenReturn("GREENHOUSE");
+
+        when(collector.collect())
+                .thenReturn(List.of(listing));
+
+        when(jobIngestionItemService.ingestListing(
+                eq(companyId),
+                eq(companyName),
+                eq("GREENHOUSE"),
+                same(listing)
+        )).thenReturn(false);
+
+        when(jobSourceListingService.deactivateMissingListings(
+                eq("GREENHOUSE"),
+                anySet()
+        )).thenReturn(0);
+
+        JobIngestionService service =
+                new JobIngestionService(
+                        jobIngestionItemService,
+                        jobSourceListingService
+                );
+
+        JobIngestionResult result =
+                service.ingest(
+                        companyId,
+                        companyName,
+                        collector
+                );
+
+        assertThat(result.collected())
+                .isEqualTo(1);
+
+        assertThat(result.created())
+                .isEqualTo(0);
+
+        assertThat(result.updated())
+                .isEqualTo(1);
+
+        assertThat(result.failed())
+                .isEqualTo(0);
     }
 }

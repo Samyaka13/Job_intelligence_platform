@@ -10,9 +10,10 @@ import org.springframework.http.*;
 
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.containers.PostgreSQLContainer;
+
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.postgresql.PostgreSQLContainer;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -22,8 +23,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 class CompanyControllerIT {
 
     @Container
-    static PostgreSQLContainer<?> postgres =
-            new PostgreSQLContainer<>("postgres:17")
+    static PostgreSQLContainer postgres =
+            new PostgreSQLContainer("postgres:17")
                     .withDatabaseName("job_intelligence_test")
                     .withUsername("test")
                     .withPassword("test");

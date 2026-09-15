@@ -15,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class JobIngestionItemService {
@@ -50,6 +51,7 @@ public class JobIngestionItemService {
             RawJobListing rawJobListing
     ) {
 
+
         NormalizedJobData normalizedJobData =
                 jobNormalizer.normalize(rawJobListing, companyName);
 
@@ -57,7 +59,9 @@ public class JobIngestionItemService {
                 normalizedJobData.canonicalFingerprint()
         );
 
+
         boolean created = false;
+        boolean descriptionChanged = false;
 
         if (job == null) {
 
@@ -83,8 +87,15 @@ public class JobIngestionItemService {
             created = true;
 
         } else {
-
+            descriptionChanged = !Objects.equals(job.getDescriptionHash(),normalizedJobData.descriptionHash());
             job.markSeen(Instant.now());
+
+            if(descriptionChanged){
+                job.updateDescription(
+                        normalizedJobData.description(),
+                        normalizedJobData.descriptionHash()
+                );
+            }
         }
 
         jobSourceListingService.createOrRefresh(
@@ -101,15 +112,17 @@ public class JobIngestionItemService {
                 normalizedJobData.locations()
         );
 
-        List<ExtractedJobRequirement> requirements =
-                jobRequirementExtractionService.extract(
-                        normalizedJobData.description()
-                );
+        if(created ||  descriptionChanged) {
+            List<ExtractedJobRequirement> requirements =
+                    jobRequirementExtractionService.extract(
+                            normalizedJobData.description()
+                    );
 
-        jobRequirementService.replaceRequirements(
-                job.getId(),
-                requirements
-        );
+            jobRequirementService.replaceRequirements(
+                    job.getId(),
+                    requirements
+            );
+        }
 
         return created;
     }

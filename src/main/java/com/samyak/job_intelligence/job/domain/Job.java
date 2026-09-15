@@ -134,4 +134,8 @@ public class Job extends AuditableEntity {
         this.status = JobStatus.ACTIVE;
     }
 
+    public void updateDescription(String description, String descriptionHash){
+        this.description = description;
+        this.descriptionHash = descriptionHash;
+    }
 }

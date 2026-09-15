@@ -17,4 +17,12 @@ public class CandidateTextNormalizer {
                 .filter(location -> location != null && !location.isBlank())
                 .toList();
     }
+
+    public String normalizeSkill(String skill) {
+        if (skill == null) {
+            return null;
+        }
+
+        return TextNormalizationSupport.normalizeWhitespaceAndCase(skill);
+    }
 }

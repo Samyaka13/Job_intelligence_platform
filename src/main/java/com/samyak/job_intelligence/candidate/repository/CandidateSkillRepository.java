@@ -13,4 +13,9 @@ public interface CandidateSkillRepository extends JpaRepository<CandidateSkill,L
             Long candidateProfileId,
             List<String> normalizedSkills
     );
+
+    boolean existsByCandidateProfileIdAndNormalizedSkill(
+            Long candidateProfileId,
+            String normalizedSkill
+    );
 }

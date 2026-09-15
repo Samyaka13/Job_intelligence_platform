@@ -6,11 +6,10 @@ import com.samyak.job_intelligence.candidate.web.dto.CandidateSkillCreateRequest
 import com.samyak.job_intelligence.candidate.web.dto.CandidateSkillResponse;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.*;
 
+@RestController
+@RequestMapping("/api/v1/candidates/{candidateProfileId}/skills")
 public class CandidateSkillController {
     private final CandidateSkillService candidateSkillService;
 
@@ -27,7 +26,6 @@ public class CandidateSkillController {
         CandidateSkill candidateSkill = candidateSkillService.addSkill(
                 candidateProfileId,
                 request.skill(),
-                request.normalizedSkill(),
                 request.proficiency(),
                 request.yearsExperience(),
                 request.primary());

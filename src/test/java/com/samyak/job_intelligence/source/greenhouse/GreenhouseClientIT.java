@@ -19,10 +19,16 @@ class GreenhouseClientIT {
     @Test
     void shouldFetchAirbnbJobs() {
 
-        GreenhouseJobsResponse response = greenhouseClient.getJobs();
+        GreenhouseJobsResponse response =
+                greenhouseClient.getJobs("airbnb");
 
-        assertThat(response).isNotNull();
-        assertThat(response.jobs()).isNotNull();
-        assertThat(response.jobs()).isNotEmpty();
+        assertThat(response)
+                .isNotNull();
+
+        assertThat(response.jobs())
+                .isNotNull();
+
+        assertThat(response.jobs())
+                .isNotEmpty();
     }
 }

@@ -13,12 +13,14 @@ public class LlmRequirementExtractor implements RequirementExtractor {
     private final LlmRequirementPromptBuilder llmRequirementPromptBuilder;
     private final LlmRequirementMapper llmRequirementMapper;
     private final ObjectMapper objectMapper;
+    private final JobDescriptionCleaner jobDescriptionCleaner;
 
-    public LlmRequirementExtractor(LlmClient llmClient, LlmRequirementPromptBuilder llmRequirementPromptBuilder, LlmRequirementMapper llmRequirementMapper, ObjectMapper objectMapper) {
+    public LlmRequirementExtractor(LlmClient llmClient, LlmRequirementPromptBuilder llmRequirementPromptBuilder, LlmRequirementMapper llmRequirementMapper, ObjectMapper objectMapper, JobDescriptionCleaner jobDescriptionCleaner) {
         this.llmClient = llmClient;
         this.llmRequirementPromptBuilder = llmRequirementPromptBuilder;
         this.llmRequirementMapper = llmRequirementMapper;
         this.objectMapper = objectMapper;
+        this.jobDescriptionCleaner = jobDescriptionCleaner;
     }
 
 
@@ -28,7 +30,10 @@ public class LlmRequirementExtractor implements RequirementExtractor {
 
         String systemPrompt  = llmRequirementPromptBuilder.systemPrompt();
 
-        String userPrompt = llmRequirementPromptBuilder.userPrompt(jobDescription);
+        String cleanedDesc = jobDescriptionCleaner.clean(jobDescription);
+
+        // I am writing this to remove the HTML thing from the JD coming from GREENHOUSE To reduce the token cost of input
+        String userPrompt = llmRequirementPromptBuilder.userPrompt(cleanedDesc);
 
         String response = llmClient.generate(systemPrompt,userPrompt);
 

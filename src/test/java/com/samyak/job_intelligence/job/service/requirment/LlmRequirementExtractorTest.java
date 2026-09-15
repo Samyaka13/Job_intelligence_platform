@@ -31,11 +31,16 @@ class LlmRequirementExtractorTest {
     @Mock
     private ObjectMapper objectMapper;
 
+    @Mock
+    private JobDescriptionCleaner jobDescriptionCleaner;
+
     @Test
     void shouldExtractRequirementsFromLlmResponse() throws Exception {
 
         String jobDescription =
                 "Strong Java experience is required. Kafka is a plus.";
+
+        String cleanedUpDescription = "Strong Java experience is required. Kafka is a plus.";
 
         String systemPrompt =
                 "system prompt";
@@ -108,7 +113,7 @@ class LlmRequirementExtractorTest {
         when(promptBuilder.systemPrompt())
                 .thenReturn(systemPrompt);
 
-        when(promptBuilder.userPrompt(jobDescription))
+        when(promptBuilder.userPrompt(cleanedUpDescription))
                 .thenReturn(userPrompt);
 
         when(llmClient.generate(systemPrompt, userPrompt))
@@ -123,12 +128,16 @@ class LlmRequirementExtractorTest {
                 extractionResponse.requirements()
         )).thenReturn(mappedRequirements);
 
+        when(jobDescriptionCleaner.clean(jobDescription)).thenReturn(cleanedUpDescription);
+
         LlmRequirementExtractor extractor =
                 new LlmRequirementExtractor(
                         llmClient,
                         promptBuilder,
                         requirementMapper,
-                        objectMapper
+                        objectMapper,
+                        jobDescriptionCleaner
+
                 );
 
         List<ExtractedJobRequirement> result =
@@ -149,11 +158,16 @@ class LlmRequirementExtractorTest {
         assertThat(result.get(1).mandatory())
                 .isFalse();
 
+
+        verify(jobDescriptionCleaner)
+                .clean(jobDescription);
+
         verify(llmClient)
                 .generate(systemPrompt, userPrompt);
 
         verify(requirementMapper)
                 .map(extractionResponse.requirements());
+
     }
 
     @Test
@@ -164,7 +178,8 @@ class LlmRequirementExtractorTest {
                         llmClient,
                         promptBuilder,
                         requirementMapper,
-                        objectMapper
+                        objectMapper,
+                        jobDescriptionCleaner
                 );
 
         assertThat(extractor.extract(" "))
@@ -185,10 +200,13 @@ class LlmRequirementExtractorTest {
         String jobDescription =
                 "Java experience is required.";
 
+        String cleanedUpDescription =
+                "Java experience is required.";
+
         when(promptBuilder.systemPrompt())
                 .thenReturn("system");
 
-        when(promptBuilder.userPrompt(jobDescription))
+        when(promptBuilder.userPrompt(cleanedUpDescription))
                 .thenReturn("user");
 
         when(llmClient.generate("system", "user"))
@@ -200,13 +218,15 @@ class LlmRequirementExtractorTest {
         )).thenThrow(
                 new IllegalArgumentException("invalid json")
         );
+        when(jobDescriptionCleaner.clean(jobDescription)).thenReturn(cleanedUpDescription);
 
         LlmRequirementExtractor extractor =
                 new LlmRequirementExtractor(
                         llmClient,
                         promptBuilder,
                         requirementMapper,
-                        objectMapper
+                        objectMapper,
+                        jobDescriptionCleaner
                 );
 
         assertThat(

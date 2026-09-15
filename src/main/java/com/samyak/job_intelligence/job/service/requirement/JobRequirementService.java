@@ -38,7 +38,6 @@ public class JobRequirementService {
                         requirement.requirementText()
 
                 )).toList();
-//        System.out.println("Requirements before save = " + requirements.size());
         System.out.println("Requirements job ID = " + job.getId());
 
         return jobRequirementRepository.saveAll(requirements);

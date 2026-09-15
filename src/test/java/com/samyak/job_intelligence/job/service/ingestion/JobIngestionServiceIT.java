@@ -6,16 +6,16 @@ import com.samyak.job_intelligence.job.domain.*;
 import com.samyak.job_intelligence.job.repository.JobLocationRepository;
 import com.samyak.job_intelligence.job.repository.JobRepository;
 import com.samyak.job_intelligence.job.repository.JobRequirementRepository;
+import com.samyak.job_intelligence.job.service.normalization.JobNormalizer;
 import com.samyak.job_intelligence.job.service.requirement.ExtractedJobRequirement;
 import com.samyak.job_intelligence.job.service.requirement.JobRequirementExtractionService;
 import com.samyak.job_intelligence.source.domain.JobSource;
 import com.samyak.job_intelligence.source.domain.JobSourceListing;
+import com.samyak.job_intelligence.source.domain.SourceConfiguration;
 import com.samyak.job_intelligence.source.greehouse.GreenhouseCollector;
 import com.samyak.job_intelligence.source.repository.JobSourceListingRepository;
 import com.samyak.job_intelligence.source.repository.JobSourceRepository;
-import com.samyak.job_intelligence.source.service.JobSourceCollector;
 import com.samyak.job_intelligence.source.service.RawJobListing;
-import com.samyak.job_intelligence.job.service.normalization.JobNormalizer;
 import com.samyak.job_intelligence.source.service.RawJobLocation;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,9 +27,13 @@ import org.springframework.transaction.annotation.Transactional;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.postgresql.PostgreSQLContainer;
+import tools.jackson.databind.node.JsonNodeFactory;
+
 import java.time.Instant;
 import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -82,7 +86,6 @@ class JobIngestionServiceIT {
     @MockitoBean
     private JobRequirementExtractionService jobRequirementExtractionService;
 
-
     @Test
     @Transactional
     void shouldPersistNewJobAndSourceListing() {
@@ -95,7 +98,18 @@ class JobIngestionServiceIT {
                 )
         );
 
-        JobSource source = jobSourceRepository.findByCode("GREENHOUSE").orElseThrow();
+        JobSource source =
+                jobSourceRepository.findByCode("GREENHOUSE")
+                        .orElseThrow();
+
+        SourceConfiguration sourceConfiguration =
+                new SourceConfiguration(
+                        company,
+                        source,
+                        JsonNodeFactory.instance.objectNode()
+                                .put("boardToken", "test-board"),
+                        true
+                );
 
         RawJobListing rawListing =
                 new RawJobListing(
@@ -103,17 +117,19 @@ class JobIngestionServiceIT {
                         "Backend Engineer",
                         "Build backend services using Java and Spring Boot.",
                         "https://example.com/job/123",
-                        "https://example.com/apply/123",List.of(
-                        new RawJobLocation(
-                                null,
-                                null,
-                                null,
-                                "Bangalore, Karnataka, India"
-                        )
-                ),
+                        "https://example.com/apply/123",
+                        List.of(
+                                new RawJobLocation(
+                                        null,
+                                        null,
+                                        null,
+                                        "Bangalore, Karnataka, India"
+                                )
+                        ),
                         Instant.now(),
                         null
                 );
+
         List<ExtractedJobRequirement> extractedRequirements =
                 List.of(
                         new ExtractedJobRequirement(
@@ -133,34 +149,42 @@ class JobIngestionServiceIT {
                                 "Experience with Kafka is a plus."
                         )
                 );
-        when(collector.getSource()).thenReturn("GREENHOUSE");
-        when(collector.collect()).thenReturn(List.of(rawListing));
+
+        when(collector.getSource())
+                .thenReturn("GREENHOUSE");
+
+        when(collector.collect(any(SourceConfiguration.class)))
+                .thenReturn(List.of(rawListing));
+
         when(jobRequirementExtractionService.extract(
                 eq("Build backend services using Java and Spring Boot.")
         )).thenReturn(extractedRequirements);
+
         jobIngestionService.ingest(
                 company.getId(),
                 company.getCanonicalName(),
-                collector
+                collector,
+                sourceConfiguration
         );
+
+        verify(collector)
+                .collect(sourceConfiguration);
 
         verify(jobRequirementExtractionService)
                 .extract(
                         eq("Build backend services using Java and Spring Boot.")
                 );
 
-
-
         List<Job> jobs = jobRepository.findAll();
-        for (Job j : jobs) {
-            System.out.println("Job ID = " + j.getId());
-        }
 
-        assertThat(jobs).hasSize(1);
+        assertThat(jobs)
+                .hasSize(1);
 
         Job job = jobs.getFirst();
 
-        assertThat(job.getId()).isNotNull();
+        assertThat(job.getId())
+                .isNotNull();
+
         assertThat(job.getCompany().getId())
                 .isEqualTo(company.getId());
 
@@ -173,9 +197,11 @@ class JobIngestionServiceIT {
         List<JobSourceListing> listings =
                 jobSourceListingRepository.findAll();
 
-        assertThat(listings).hasSize(1);
+        assertThat(listings)
+                .hasSize(1);
 
-        JobSourceListing listing = listings.getFirst();
+        JobSourceListing listing =
+                listings.getFirst();
 
         assertThat(listing.getJob().getId())
                 .isEqualTo(job.getId());
@@ -192,7 +218,8 @@ class JobIngestionServiceIT {
         assertThat(locations)
                 .hasSize(1);
 
-        JobLocation location = locations.getFirst();
+        JobLocation location =
+                locations.getFirst();
 
         assertThat(location.getJob().getId())
                 .isEqualTo(job.getId());
@@ -239,7 +266,6 @@ class JobIngestionServiceIT {
 
         assertThat(kafkaRequirement.isMandatory())
                 .isFalse();
-
     }
 
     @Test
@@ -254,7 +280,18 @@ class JobIngestionServiceIT {
                 )
         );
 
-        JobSource source = jobSourceRepository.findByCode("GREENHOUSE").orElseThrow();
+        JobSource source =
+                jobSourceRepository.findByCode("GREENHOUSE")
+                        .orElseThrow();
+
+        SourceConfiguration sourceConfiguration =
+                new SourceConfiguration(
+                        company,
+                        source,
+                        JsonNodeFactory.instance.objectNode()
+                                .put("boardToken", "test-board"),
+                        true
+                );
 
         RawJobListing rawListing =
                 new RawJobListing(
@@ -275,38 +312,47 @@ class JobIngestionServiceIT {
                         null
                 );
 
-        when(collector.getSource()).thenReturn("GREENHOUSE");
-        when(collector.collect()).thenReturn(List.of(rawListing));
+        when(collector.getSource())
+                .thenReturn("GREENHOUSE");
 
-        // First ingestion
+        when(collector.collect(any(SourceConfiguration.class)))
+                .thenReturn(List.of(rawListing));
+
         jobIngestionService.ingest(
                 company.getId(),
                 company.getCanonicalName(),
-                collector
+                collector,
+                sourceConfiguration
         );
 
-        List<Job> jobsAfterFirstIngestion = jobRepository.findAll();
+        List<Job> jobsAfterFirstIngestion =
+                jobRepository.findAll();
 
         assertThat(jobsAfterFirstIngestion)
                 .hasSize(1);
 
-        Job firstJob = jobsAfterFirstIngestion.getFirst();
+        Job firstJob =
+                jobsAfterFirstIngestion.getFirst();
 
-        Long firstJobId = firstJob.getId();
+        Long firstJobId =
+                firstJob.getId();
 
-        // Second ingestion of the same listing
         jobIngestionService.ingest(
                 company.getId(),
                 company.getCanonicalName(),
-                collector
+                collector,
+                sourceConfiguration
+
         );
 
-        List<Job> jobsAfterSecondIngestion = jobRepository.findAll();
+        List<Job> jobsAfterSecondIngestion =
+                jobRepository.findAll();
 
         assertThat(jobsAfterSecondIngestion)
                 .hasSize(1);
 
-        Job secondJob = jobsAfterSecondIngestion.getFirst();
+        Job secondJob =
+                jobsAfterSecondIngestion.getFirst();
 
         assertThat(secondJob.getId())
                 .isEqualTo(firstJobId);
@@ -317,7 +363,8 @@ class JobIngestionServiceIT {
         assertThat(listings)
                 .hasSize(1);
 
-        JobSourceListing listing = listings.getFirst();
+        JobSourceListing listing =
+                listings.getFirst();
 
         assertThat(listing.getJob().getId())
                 .isEqualTo(firstJobId);
@@ -345,6 +392,15 @@ class JobIngestionServiceIT {
                 jobSourceRepository.findByCode("GREENHOUSE")
                         .orElseThrow();
 
+        SourceConfiguration sourceConfiguration =
+                new SourceConfiguration(
+                        company,
+                        source,
+                        JsonNodeFactory.instance.objectNode()
+                                .put("boardToken", "test-board"),
+                        true
+                );
+
         RawJobListing rawListing =
                 new RawJobListing(
                         "123",
@@ -364,7 +420,6 @@ class JobIngestionServiceIT {
                         null
                 );
 
-        // First ingestion requirements: Java + Kafka
         List<ExtractedJobRequirement> firstRequirements =
                 List.of(
                         new ExtractedJobRequirement(
@@ -385,7 +440,6 @@ class JobIngestionServiceIT {
                         )
                 );
 
-        // Second ingestion requirements: Java + Docker
         List<ExtractedJobRequirement> secondRequirements =
                 List.of(
                         new ExtractedJobRequirement(
@@ -409,7 +463,7 @@ class JobIngestionServiceIT {
         when(collector.getSource())
                 .thenReturn("GREENHOUSE");
 
-        when(collector.collect())
+        when(collector.collect(any(SourceConfiguration.class)))
                 .thenReturn(List.of(rawListing));
 
         when(jobRequirementExtractionService.extract(
@@ -419,11 +473,11 @@ class JobIngestionServiceIT {
                 secondRequirements
         );
 
-        // First ingestion
         jobIngestionService.ingest(
                 company.getId(),
                 company.getCanonicalName(),
-                collector
+                collector,
+                sourceConfiguration
         );
 
         Long originalJobId =
@@ -431,15 +485,15 @@ class JobIngestionServiceIT {
                         .getFirst()
                         .getId();
 
-        // Second ingestion of the same listing
         jobIngestionService.ingest(
                 company.getId(),
                 company.getCanonicalName(),
-                collector
+                collector,
+                sourceConfiguration
         );
 
-        // Only one canonical job should exist
-        List<Job> jobs = jobRepository.findAll();
+        List<Job> jobs =
+                jobRepository.findAll();
 
         assertThat(jobs)
                 .hasSize(1);
@@ -447,7 +501,6 @@ class JobIngestionServiceIT {
         assertThat(jobs.getFirst().getId())
                 .isEqualTo(originalJobId);
 
-        // Only one source listing should exist
         assertThat(jobSourceListingRepository.findAll())
                 .hasSize(1);
 
@@ -464,7 +517,6 @@ class JobIngestionServiceIT {
         assertThat(listing.getJobSource().getId())
                 .isEqualTo(source.getId());
 
-        // Requirements should have been replaced
         List<JobRequirement> requirements =
                 jobRequirementRepository.findByJobId(originalJobId);
 
@@ -485,7 +537,8 @@ class JobIngestionServiceIT {
         JobRequirement javaRequirement =
                 requirements.stream()
                         .filter(requirement ->
-                                requirement.getNormalizedValue().equals("java")
+                                requirement.getNormalizedValue()
+                                        .equals("java")
                         )
                         .findFirst()
                         .orElseThrow();
@@ -496,7 +549,8 @@ class JobIngestionServiceIT {
         JobRequirement dockerRequirement =
                 requirements.stream()
                         .filter(requirement ->
-                                requirement.getNormalizedValue().equals("docker")
+                                requirement.getNormalizedValue()
+                                        .equals("docker")
                         )
                         .findFirst()
                         .orElseThrow();
@@ -509,7 +563,6 @@ class JobIngestionServiceIT {
                         eq("Build backend services using Java and Spring Boot.")
                 );
     }
-
 
     @Test
     @Transactional
@@ -526,6 +579,15 @@ class JobIngestionServiceIT {
         JobSource source =
                 jobSourceRepository.findByCode("GREENHOUSE")
                         .orElseThrow();
+
+        SourceConfiguration sourceConfiguration =
+                new SourceConfiguration(
+                        company,
+                        source,
+                        JsonNodeFactory.instance.objectNode()
+                                .put("boardToken", "test-board"),
+                        true
+                );
 
         RawJobListing jobA =
                 new RawJobListing(
@@ -571,14 +633,14 @@ class JobIngestionServiceIT {
         when(jobRequirementExtractionService.extract(anyString()))
                 .thenReturn(List.of());
 
-        // First collection: Job A + Job B
-        when(collector.collect())
+        when(collector.collect(any(SourceConfiguration.class)))
                 .thenReturn(List.of(jobA, jobB));
 
         jobIngestionService.ingest(
                 company.getId(),
                 company.getCanonicalName(),
-                collector
+                collector,
+                sourceConfiguration
         );
 
         List<JobSourceListing> listingsAfterFirstIngestion =
@@ -587,14 +649,14 @@ class JobIngestionServiceIT {
         assertThat(listingsAfterFirstIngestion)
                 .hasSize(2);
 
-        // Second collection: Job A only
-        when(collector.collect())
+        when(collector.collect(any(SourceConfiguration.class)))
                 .thenReturn(List.of(jobA));
 
         jobIngestionService.ingest(
                 company.getId(),
                 company.getCanonicalName(),
-                collector
+                collector,
+                sourceConfiguration
         );
 
         List<JobSourceListing> listingsAfterSecondIngestion =
@@ -606,7 +668,8 @@ class JobIngestionServiceIT {
         JobSourceListing jobAListing =
                 listingsAfterSecondIngestion.stream()
                         .filter(listing ->
-                                listing.getExternalJobId().equals("100")
+                                listing.getExternalJobId()
+                                        .equals("100")
                         )
                         .findFirst()
                         .orElseThrow();
@@ -614,7 +677,8 @@ class JobIngestionServiceIT {
         JobSourceListing jobBListing =
                 listingsAfterSecondIngestion.stream()
                         .filter(listing ->
-                                listing.getExternalJobId().equals("200")
+                                listing.getExternalJobId()
+                                        .equals("200")
                         )
                         .findFirst()
                         .orElseThrow();

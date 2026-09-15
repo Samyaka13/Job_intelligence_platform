@@ -1,5 +1,6 @@
 package com.samyak.job_intelligence.job.service.ingestion;
 
+import com.samyak.job_intelligence.source.domain.SourceConfiguration;
 import com.samyak.job_intelligence.source.service.JobSourceCollector;
 import com.samyak.job_intelligence.source.service.JobSourceListingService;
 import com.samyak.job_intelligence.source.service.RawJobListing;
@@ -26,11 +27,12 @@ public class JobIngestionService {
     public JobIngestionResult ingest(
             Long companyId,
             String companyName,
-            JobSourceCollector jobSourceCollector
+            JobSourceCollector jobSourceCollector,
+            SourceConfiguration sourceConfiguration
     ) {
 
         List<RawJobListing> listings =
-                jobSourceCollector.collect();
+                jobSourceCollector.collect(sourceConfiguration);
 
         int collected = listings.size();
         int created = 0;
@@ -68,14 +70,7 @@ public class JobIngestionService {
                 }
 
             } catch (Exception e) {
-
                 failed++;
-
-                System.out.println(
-                        "FAILED JOB: " +
-                                rawJobListing.externalJobId()
-                );
-
                 e.printStackTrace();
             }
         }

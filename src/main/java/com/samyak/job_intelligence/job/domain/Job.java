@@ -133,4 +133,5 @@ public class Job extends AuditableEntity {
         this.lastSeenAt = seenAt;
         this.status = JobStatus.ACTIVE;
     }
+
 }

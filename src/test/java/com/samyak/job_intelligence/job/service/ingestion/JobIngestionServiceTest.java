@@ -1,5 +1,6 @@
 package com.samyak.job_intelligence.job.service.ingestion;
 
+import com.samyak.job_intelligence.source.domain.SourceConfiguration;
 import com.samyak.job_intelligence.source.service.JobSourceCollector;
 import com.samyak.job_intelligence.source.service.JobSourceListingService;
 import com.samyak.job_intelligence.source.service.RawJobListing;
@@ -27,6 +28,8 @@ class JobIngestionServiceTest {
     @Mock
     private JobSourceCollector collector;
 
+    @Mock
+    private SourceConfiguration configuration;
 
     @Test
     void shouldCountCreatedAndUpdatedJobs() {
@@ -61,7 +64,7 @@ class JobIngestionServiceTest {
         when(collector.getSource())
                 .thenReturn("GREENHOUSE");
 
-        when(collector.collect())
+        when(collector.collect(configuration))
                 .thenReturn(List.of(listing1, listing2));
 
         when(jobIngestionItemService.ingestListing(
@@ -93,7 +96,8 @@ class JobIngestionServiceTest {
                 service.ingest(
                         companyId,
                         companyName,
-                        collector
+                        collector,
+                        configuration
                 );
 
         assertThat(result.collected())
@@ -180,7 +184,7 @@ class JobIngestionServiceTest {
         when(collector.getSource())
                 .thenReturn("GREENHOUSE");
 
-        when(collector.collect())
+        when(collector.collect(configuration))
                 .thenReturn(
                         List.of(
                                 listing1,
@@ -230,7 +234,8 @@ class JobIngestionServiceTest {
                 service.ingest(
                         companyId,
                         companyName,
-                        collector
+                        collector,
+                        configuration
                 );
 
         assertThat(result.collected())
@@ -303,7 +308,7 @@ class JobIngestionServiceTest {
         when(collector.getSource())
                 .thenReturn("GREENHOUSE");
 
-        when(collector.collect())
+        when(collector.collect(configuration))
                 .thenReturn(List.of(listing));
 
         when(jobIngestionItemService.ingestListing(
@@ -328,7 +333,8 @@ class JobIngestionServiceTest {
                 service.ingest(
                         companyId,
                         companyName,
-                        collector
+                        collector,
+                        configuration
                 );
 
         assertThat(result.collected())

@@ -2,6 +2,8 @@ package com.samyak.job_intelligence.candidate.web;
 
 import com.samyak.job_intelligence.candidate.domain.CandidateSkill;
 import com.samyak.job_intelligence.candidate.service.CandidateSkillService;
+import com.samyak.job_intelligence.candidate.web.dto.CandidateSkillBulkRequest;
+import com.samyak.job_intelligence.candidate.web.dto.CandidateSkillBulkResponse;
 import com.samyak.job_intelligence.candidate.web.dto.CandidateSkillCreateRequest;
 import com.samyak.job_intelligence.candidate.web.dto.CandidateSkillResponse;
 import jakarta.validation.Valid;
@@ -30,5 +32,16 @@ public class CandidateSkillController {
                 request.yearsExperience(),
                 request.primary());
         return  CandidateSkillResponse.from(candidateSkill);
+    }
+    @PostMapping("/bulk")
+    @ResponseStatus(HttpStatus.CREATED)
+    public CandidateSkillBulkResponse addSkills(
+            @PathVariable Long candidateProfileId,
+            @Valid @RequestBody CandidateSkillBulkRequest request
+    ) {
+        return candidateSkillService.addSkills(
+                candidateProfileId,
+                request.skills()
+        );
     }
 }

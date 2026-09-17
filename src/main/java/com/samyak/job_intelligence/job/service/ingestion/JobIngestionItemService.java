@@ -55,16 +55,25 @@ public class JobIngestionItemService {
         NormalizedJobData normalizedJobData =
                 jobNormalizer.normalize(rawJobListing, companyName);
 
-        Job job = jobService.findByCanonicalFingerPrint(
-                normalizedJobData.canonicalFingerprint()
-        );
+        Job job = jobSourceListingService.findJobBySourceAndExternalJobId(sourceCode, rawJobListing.externalJobId());
 
+        if (job == null) {
+            job = jobService.findByCanonicalFingerPrint(
+                    normalizedJobData.canonicalFingerprint()
+            );
+        }
+
+        System.out.println(
+                "LOOKUP -> fingerprint=" +
+                        normalizedJobData.canonicalFingerprint() +
+                        ", jobId=" +
+                        (job == null ? null : job.getId())
+        );
 
         boolean created = false;
         boolean descriptionChanged = false;
 
         if (job == null) {
-
             job = jobService.create(
                     companyId,
                     normalizedJobData.title(),
@@ -89,6 +98,26 @@ public class JobIngestionItemService {
         } else {
             descriptionChanged = !Objects.equals(job.getDescriptionHash(),normalizedJobData.descriptionHash());
             job.markSeen(Instant.now());
+
+            System.out.println(
+                    "JOB UPDATE -> id=" + job.getId()
+                            + ", min=" + normalizedJobData.experienceMinYears()
+                            + ", max=" + normalizedJobData.experienceMaxYears()
+            );
+            if(job.getId() == 91){
+                System.out.println("ID WITH 91 got updated");
+            }
+            job.updateNormalizedFields(
+                    normalizedJobData.employmentType(),
+                    normalizedJobData.seniorityLevel(),
+                    normalizedJobData.experienceMinYears(),
+                    normalizedJobData.experienceMaxYears(),
+                    normalizedJobData.salaryMin(),
+                    normalizedJobData.salaryMax(),
+                    normalizedJobData.salaryCurrency(),
+                    normalizedJobData.normalisedApplicationUrl(),
+                    normalizedJobData.canonicalFingerprint()
+            );
 
             if(descriptionChanged){
                 job.updateDescription(

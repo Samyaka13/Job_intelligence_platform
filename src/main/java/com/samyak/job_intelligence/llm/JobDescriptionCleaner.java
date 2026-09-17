@@ -3,36 +3,35 @@ package com.samyak.job_intelligence.llm;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Entities;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Component;
 
 @Component
 public class JobDescriptionCleaner {
 
-    public String clean(String description) {
+    public static String clean(String description) {
 
         if (description == null || description.isBlank()) {
             return description;
         }
 
-        if (!containsHtml(description)) {
+        String decodedDescription = Entities.unescape(description);
+
+        if (!containsHtml(decodedDescription)) {
             return description;
         }
 
-        Document document = Jsoup.parseBodyFragment(description);
+        Document document =
+                Jsoup.parseBodyFragment(decodedDescription);
 
-        /*
-         * Remove elements that should never be sent to the LLM.
-         */
         document.select("script, style, noscript").remove();
 
-        /*
-         * Add line breaks around block-level elements so that
-         * the resulting text remains readable.
-         */
         document.select("br").before("\n");
 
-        Elements blockElements = document.select("p, div, li, h1, h2, h3, h4, h5, h6");
+        Elements blockElements =
+                document.select("p, div, li, h1, h2, h3, h4, h5, h6");
+
         for (Element element : blockElements) {
             element.prepend("\n");
             element.append("\n");
@@ -48,7 +47,7 @@ public class JobDescriptionCleaner {
                 .trim();
     }
 
-    private boolean containsHtml(String description) {
+    public static boolean containsHtml(String description) {
         return description.matches("(?s).*<\\s*[a-zA-Z][^>]*>.*");
     }
 }

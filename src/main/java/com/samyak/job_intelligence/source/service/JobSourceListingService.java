@@ -74,4 +74,16 @@ public class JobSourceListingService {
         }
         return deactivated;
     }
+
+    public Job findJobBySourceAndExternalJobId(String sourceCode,String externalJobId){
+        if(externalJobId == null) return null;
+        JobSource jobSource = jobSourceService.getByCode(sourceCode);
+        return jobSourceListingRepository
+                .findByJobSourceIdAndExternalJobId(
+                        jobSource.getId(),
+                        externalJobId
+                )
+                .map(JobSourceListing::getJob)
+                .orElse(null);
+    }
 }

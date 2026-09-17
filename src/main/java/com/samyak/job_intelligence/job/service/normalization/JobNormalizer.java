@@ -4,6 +4,7 @@ import com.samyak.job_intelligence.common.normalization.TextNormalizationSupport
 import com.samyak.job_intelligence.job.domain.EmploymentType;
 import com.samyak.job_intelligence.job.domain.SeniorityLevel;
 import com.samyak.job_intelligence.job.service.parsing.*;
+import com.samyak.job_intelligence.llm.JobDescriptionCleaner;
 import com.samyak.job_intelligence.source.service.RawJobListing;
 import org.springframework.stereotype.Component;
 
@@ -35,13 +36,20 @@ public class JobNormalizer {
         String normalizedCompanyName = TextNormalizationSupport.normalizeWhitespaceAndCase(companyName);
         String normalizedTitle = TextNormalizationSupport.normalizeWhitespaceAndCase(rawJobListing.title());
         String normalizedDescription = jobTextNormalizer.normalizeDescription(rawJobListing.description());
+        String cleanedUpDescriptionFromHTML = JobDescriptionCleaner.clean(normalizedDescription);
+
         String normalizedSourceUrl = jobUrlNormalizer.normalize(rawJobListing.sourceUrl());
         String normalizedApplicationUrl = jobUrlNormalizer.normalize(rawJobListing.applicationUrl());
         String descriptionHash = descriptionHashGenerator.generate(normalizedDescription);
-        ExperienceRange experienceRange = experienceParser.parse(normalizedDescription);
+        ExperienceRange experienceRange = experienceParser.parse(cleanedUpDescriptionFromHTML);
+        System.out.println(
+                "JOB NORMALIZER -> title=" + rawJobListing.title()
+                        + ", min=" + experienceRange.minYears()
+                        + ", max=" + experienceRange.maxYears()
+        );
         EmploymentType employmentType = employmentTypeParser.parse(rawJobListing.title());
         SeniorityLevel seniorityLevel = seniorityParser.parse(rawJobListing.title());
-        SalaryRange salaryRange = salaryParser.parse(normalizedDescription);
+        SalaryRange salaryRange = salaryParser.parse(cleanedUpDescriptionFromHTML);
         List<NormalizedJobLocation> locations = jobTextNormalizer.normalizeJobLocations(rawJobListing.locations());
         String canonicalFingerPrint = jobFingerprintGenerator.generate(
                 normalizedCompanyName,

@@ -57,4 +57,58 @@ public class CandidateProfileService {
                         )
                 );
     }
+
+    @Transactional
+    public CandidateProfile update(
+            Long candidateProfileId,
+            String name,
+            String email,
+            String currentLocation,
+            JsonNode preferredLocations,
+            BigDecimal minimumSalary,
+            String minimumSalaryCurrency,
+            BigDecimal experienceYears,
+            JsonNode preferredEmploymentTypes
+    ) {
+        CandidateProfile candidateProfile = getById(candidateProfileId);
+
+        if (email != null && !email.equals(candidateProfile.getEmail())) {
+            if (candidateProfileRepository.existsByEmail(email)) {
+                throw new IllegalArgumentException(
+                        "Candidate already exists: " + email
+                );
+            }
+            candidateProfile.updateEmail(email);
+        }
+
+        if (name != null) {
+            candidateProfile.updateName(name);
+        }
+
+        if (currentLocation != null) {
+            candidateProfile.updateCurrentLocation(currentLocation);
+        }
+
+        if (preferredLocations != null) {
+            candidateProfile.updatePreferredLocations(preferredLocations);
+        }
+
+        if (minimumSalary != null) {
+            candidateProfile.updateMinimumSalary(minimumSalary);
+        }
+
+        if (minimumSalaryCurrency != null) {
+            candidateProfile.updateMinimumSalaryCurrency(minimumSalaryCurrency);
+        }
+
+        if (experienceYears != null) {
+            candidateProfile.updateExperienceYears(experienceYears);
+        }
+
+        if (preferredEmploymentTypes != null) {
+            candidateProfile.updatePreferredEmploymentTypes(preferredEmploymentTypes);
+        }
+
+        return candidateProfile;
+    }
 }

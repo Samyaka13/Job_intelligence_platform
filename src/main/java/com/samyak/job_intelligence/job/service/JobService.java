@@ -11,6 +11,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 @Service
 @Transactional(readOnly = true)
@@ -42,12 +43,6 @@ public class JobService {
                       String descriptionHash){
         Company company = companyService.getById(companyId);
 
-        if(jobRepository.existsByCanonicalFingerprint(canonicalFingerprint)){
-            throw new IllegalArgumentException(
-                    "Job already exists for fingerprint: "
-                            + canonicalFingerprint
-            );
-        }
         Job job = new Job(company,
                 title,
                 normalizedTitle,
@@ -71,7 +66,21 @@ public class JobService {
     public Job getById(Long id){
        return jobRepository.findById(id).orElseThrow(() -> new IllegalArgumentException( "Job not found: " + id));
     }
-    public Job findByCanonicalFingerPrint(String canonicalFingerPrint){
-        return jobRepository.findByCanonicalFingerprint(canonicalFingerPrint).orElse(null);
+    public Job findByCanonicalFingerPrint(String canonicalFingerprint) {
+        List<Job> jobs =
+                jobRepository.findAllByCanonicalFingerprint(canonicalFingerprint);
+
+        if (jobs.isEmpty()) {
+            return null;
+        }
+
+        if (jobs.size() > 1) {
+            throw new IllegalStateException(
+                    "Multiple jobs found for canonical fingerprint: "
+                            + canonicalFingerprint
+            );
+        }
+
+        return jobs.getFirst();
     }
 }

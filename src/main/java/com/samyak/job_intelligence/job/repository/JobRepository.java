@@ -8,8 +8,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface JobRepository extends JpaRepository<Job,Long> {
-    Optional<Job> findByCanonicalFingerprint(String canonicalFingerPrint);
-    boolean existsByCanonicalFingerprint(String canonicalFingerPrint);
+    List<Job> findAllByCanonicalFingerprint(String canonicalFingerprint);
     Optional<Job> findByCanonicalApplicationUrl(String canonicalApplicationUrl);
     List<Job> findByStatusOrderByPostedAtDesc(JobStatus jobStatus);
 }

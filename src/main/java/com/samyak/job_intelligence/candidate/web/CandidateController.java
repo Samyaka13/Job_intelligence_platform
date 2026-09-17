@@ -5,6 +5,7 @@ import com.samyak.job_intelligence.candidate.domain.CandidateProfile;
 import com.samyak.job_intelligence.candidate.service.CandidateProfileService;
 import com.samyak.job_intelligence.candidate.web.dto.CandidateCreateRequest;
 import com.samyak.job_intelligence.candidate.web.dto.CandidateResponse;
+import com.samyak.job_intelligence.candidate.web.dto.CandidateUpdateRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -35,6 +36,27 @@ public class CandidateController {
                 request.preferredEmploymentTypes()
 
         );
+        return CandidateResponse.from(candidateProfile);
+    }
+
+    @PatchMapping("/{candidateId}")
+    public CandidateResponse update(
+            @PathVariable Long candidateId,
+            @Valid @RequestBody CandidateUpdateRequest request
+    ){
+        CandidateProfile candidateProfile =
+                candidateProfileService.update(
+                        candidateId,
+                        request.name(),
+                        request.email(),
+                        request.currentLocation(),
+                        request.preferredLocations(),
+                        request.minimumSalary(),
+                        request.minimumSalaryCurrency(),
+                        request.experienceYears(),
+                        request.preferredEmploymentTypes()
+                );
+
         return CandidateResponse.from(candidateProfile);
     }
 

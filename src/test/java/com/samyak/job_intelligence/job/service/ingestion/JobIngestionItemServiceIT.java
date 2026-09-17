@@ -48,14 +48,17 @@ class JobIngestionItemServiceIT {
 
     @DynamicPropertySource
     static void configureDatasource(DynamicPropertyRegistry registry) {
+
         registry.add(
                 "spring.datasource.url",
                 postgres::getJdbcUrl
         );
+
         registry.add(
                 "spring.datasource.username",
                 postgres::getUsername
         );
+
         registry.add(
                 "spring.datasource.password",
                 postgres::getPassword
@@ -91,6 +94,7 @@ class JobIngestionItemServiceIT {
 
     @BeforeEach
     void resetMocks() {
+
         reset(
                 jobNormalizer,
                 jobSourceListingService,
@@ -113,6 +117,9 @@ class JobIngestionItemServiceIT {
 
         RawJobListing rawJobListing =
                 mock(RawJobListing.class);
+
+        when(rawJobListing.externalJobId())
+                .thenReturn("greenhouse-1001");
 
         NormalizedJobData normalizedJobData =
                 createNormalizedJobData(
@@ -138,7 +145,18 @@ class JobIngestionItemServiceIT {
                 )
         ).thenReturn(normalizedJobData);
 
-
+        /*
+         * First identity lookup:
+         * source + externalJobId
+         *
+         * No existing source listing.
+         */
+        when(
+                jobSourceListingService.findJobBySourceAndExternalJobId(
+                        "GREENHOUSE",
+                        "greenhouse-1001"
+                )
+        ).thenReturn(null);
 
         when(
                 jobRequirementExtractionService.extract(
@@ -159,10 +177,15 @@ class JobIngestionItemServiceIT {
         assertThat(created)
                 .isTrue();
 
-        Job job =
-                jobRepository
-                        .findByCanonicalFingerprint("fingerprint-1")
-                        .orElseThrow();
+        List<Job> jobs =
+                jobRepository.findAllByCanonicalFingerprint(
+                        "fingerprint-1"
+                );
+
+        assertThat(jobs)
+                .hasSize(1);
+
+        Job job = jobs.getFirst();
 
         assertThat(job.getDescription())
                 .isEqualTo("Java experience is required.");
@@ -186,13 +209,13 @@ class JobIngestionItemServiceIT {
     }
 
     @Test
-    void shouldNotExtractRequirementsWhenDescriptionHasNotChanged() {
+    void shouldUpdateExistingJobWhenSourceAndExternalIdMatch() {
 
         Company company =
                 companyRepository.save(
                         new Company(
-                                "airbnb-unchanged",
-                                "Airbnb Unchanged",
+                                "airbnb-source-match",
+                                "Airbnb Source Match",
                                 "https://www.airbnb.com"
                         )
                 );
@@ -213,8 +236,8 @@ class JobIngestionItemServiceIT {
                         Instant.parse("2026-09-15T00:00:00Z"),
                         null,
                         "https://airbnb.com/apply/123",
-                        "fingerprint-2",
-                        "hash-2"
+                        "fingerprint-source-match",
+                        "hash-source-match"
                 );
 
         JobRequirement existingRequirement =
@@ -233,11 +256,14 @@ class JobIngestionItemServiceIT {
         RawJobListing rawJobListing =
                 mock(RawJobListing.class);
 
+        when(rawJobListing.externalJobId())
+                .thenReturn("greenhouse-2001");
+
         NormalizedJobData normalizedJobData =
                 createNormalizedJobData(
                         "Java experience is required.",
-                        "hash-2",
-                        "fingerprint-2"
+                        "hash-source-match",
+                        "fingerprint-source-match"
                 );
 
         when(
@@ -246,6 +272,16 @@ class JobIngestionItemServiceIT {
                         company.getDisplayName()
                 )
         ).thenReturn(normalizedJobData);
+
+        /*
+         * Primary identity lookup finds the existing Job.
+         */
+        when(
+                jobSourceListingService.findJobBySourceAndExternalJobId(
+                        "GREENHOUSE",
+                        "greenhouse-2001"
+                )
+        ).thenReturn(existingJob);
 
         boolean created =
                 jobIngestionItemService.ingestListing(
@@ -258,16 +294,18 @@ class JobIngestionItemServiceIT {
         assertThat(created)
                 .isFalse();
 
-        Job job =
-                jobRepository
-                        .findById(existingJob.getId())
+        Job updatedJob =
+                jobRepository.findById(existingJob.getId())
                         .orElseThrow();
 
-        assertThat(job.getDescription())
+        assertThat(updatedJob.getId())
+                .isEqualTo(existingJob.getId());
+
+        assertThat(updatedJob.getDescription())
                 .isEqualTo("Java experience is required.");
 
-        assertThat(job.getDescriptionHash())
-                .isEqualTo("hash-2");
+        assertThat(updatedJob.getDescriptionHash())
+                .isEqualTo("hash-source-match");
 
         List<JobRequirement> requirements =
                 jobRequirementRepository.findByJobId(
@@ -280,12 +318,114 @@ class JobIngestionItemServiceIT {
         assertThat(requirements.getFirst().getId())
                 .isEqualTo(existingRequirement.getId());
 
-        assertThat(requirements.getFirst().getValue())
-                .isEqualTo("Java");
-
         verifyNoInteractions(
                 jobRequirementExtractionService
         );
+    }
+
+    @Test
+    void shouldUseCanonicalFingerprintWhenSourceListingDoesNotExist() {
+
+        Company company =
+                companyRepository.save(
+                        new Company(
+                                "airbnb-fingerprint-fallback",
+                                "Airbnb Fingerprint Fallback",
+                                "https://www.airbnb.com"
+                        )
+                );
+
+        Job existingJob =
+                jobService.create(
+                        company.getId(),
+                        "Software Engineer",
+                        "software engineer",
+                        "Java experience is required.",
+                        EmploymentType.FULL_TIME,
+                        SeniorityLevel.MID,
+                        new BigDecimal("3.0"),
+                        new BigDecimal("5.0"),
+                        null,
+                        null,
+                        "USD",
+                        Instant.parse("2026-09-15T00:00:00Z"),
+                        null,
+                        "https://airbnb.com/apply/456",
+                        "fingerprint-fallback",
+                        "hash-fallback"
+                );
+
+        RawJobListing rawJobListing =
+                mock(RawJobListing.class);
+
+        when(rawJobListing.externalJobId())
+                .thenReturn("workday-3001");
+
+        NormalizedJobData normalizedJobData =
+                createNormalizedJobData(
+                        "Java experience is required.",
+                        "hash-fallback",
+                        "fingerprint-fallback"
+                );
+
+        when(
+                jobNormalizer.normalize(
+                        rawJobListing,
+                        company.getDisplayName()
+                )
+        ).thenReturn(normalizedJobData);
+
+        /*
+         * Source listing doesn't exist.
+         */
+        when(
+                jobSourceListingService.findJobBySourceAndExternalJobId(
+                        "WORKDAY",
+                        "workday-3001"
+                )
+        ).thenReturn(null);
+
+        /*
+         * Canonical fingerprint finds the existing Job.
+         *
+         * JobService internally resolves the fingerprint
+         * through JobRepository.
+         */
+        boolean created =
+                jobIngestionItemService.ingestListing(
+                        company.getId(),
+                        company.getDisplayName(),
+                        "WORKDAY",
+                        rawJobListing
+                );
+
+        assertThat(created)
+                .isFalse();
+
+        List<Job> jobs =
+                jobRepository.findAllByCanonicalFingerprint(
+                        "fingerprint-fallback"
+                );
+
+        assertThat(jobs)
+                .hasSize(1);
+
+        assertThat(jobs.getFirst().getId())
+                .isEqualTo(existingJob.getId());
+
+        /*
+         * The new source listing should be associated with
+         * the existing Job rather than creating a new Job.
+         */
+        verify(jobSourceListingService)
+                .createOrRefresh(
+                        existingJob.getId(),
+                        "WORKDAY",
+                        "workday-3001",
+                        normalizedJobData.normalizedSourceUrl(),
+                        rawJobListing.rawPayload(),
+                        rawJobListing.postedAt()
+                );
     }
 
     @Test
@@ -335,6 +475,9 @@ class JobIngestionItemServiceIT {
         RawJobListing rawJobListing =
                 mock(RawJobListing.class);
 
+        when(rawJobListing.externalJobId())
+                .thenReturn("greenhouse-4001");
+
         NormalizedJobData normalizedJobData =
                 createNormalizedJobData(
                         "Java and Spring Boot experience are required.",
@@ -360,6 +503,13 @@ class JobIngestionItemServiceIT {
         ).thenReturn(normalizedJobData);
 
         when(
+                jobSourceListingService.findJobBySourceAndExternalJobId(
+                        "GREENHOUSE",
+                        "greenhouse-4001"
+                )
+        ).thenReturn(existingJob);
+
+        when(
                 jobRequirementExtractionService.extract(
                         "Java and Spring Boot experience are required."
                 )
@@ -379,8 +529,7 @@ class JobIngestionItemServiceIT {
                 .isFalse();
 
         Job job =
-                jobRepository
-                        .findById(existingJob.getId())
+                jobRepository.findById(existingJob.getId())
                         .orElseThrow();
 
         assertThat(job.getDescription())
@@ -406,6 +555,128 @@ class JobIngestionItemServiceIT {
                 .extract(
                         "Java and Spring Boot experience are required."
                 );
+    }
+
+    @Test
+    void shouldUpdateNormalizedExperienceWhenSameSourceListingChanges() {
+
+        Company company =
+                companyRepository.save(
+                        new Company(
+                                "airbnb-experience-update",
+                                "Airbnb Experience Update",
+                                "https://www.airbnb.com"
+                        )
+                );
+
+        Job existingJob =
+                jobService.create(
+                        company.getId(),
+                        "Senior Community Growth Manager",
+                        "senior community growth manager",
+                        "8+ years experience in Sales, Business Operations, or Business Development.",
+                        EmploymentType.FULL_TIME,
+                        SeniorityLevel.SENIOR,
+                        new BigDecimal("3.0"),
+                        null,
+                        null,
+                        null,
+                        "USD",
+                        Instant.parse("2026-09-15T00:00:00Z"),
+                        null,
+                        "https://airbnb.com/apply/8178467",
+                        "fingerprint-experience-old",
+                        "same-hash"
+                );
+
+        RawJobListing rawJobListing =
+                mock(RawJobListing.class);
+
+        when(rawJobListing.externalJobId())
+                .thenReturn("greenhouse-5001");
+
+        NormalizedJobData normalizedJobData =
+                new NormalizedJobData(
+                        "Airbnb",
+                        "airbnb",
+                        "Senior Community Growth Manager",
+                        "senior community growth manager",
+                        "8+ years experience in Sales, Business Operations, or Business Development.",
+                        "same-hash",
+                        "https://airbnb.com/positions/8178467",
+                        "https://airbnb.com/positions/8178467",
+                        "https://airbnb.com/apply/8178467",
+                        "https://airbnb.com/apply/8178467",
+                        EmploymentType.FULL_TIME,
+                        SeniorityLevel.SENIOR,
+                        new BigDecimal("8.0"),
+                        null,
+                        null,
+                        null,
+                        "USD",
+                        List.of(),
+                        "fingerprint-experience-new",
+                        Instant.parse("2026-09-15T00:00:00Z")
+                );
+
+        when(
+                jobNormalizer.normalize(
+                        rawJobListing,
+                        company.getDisplayName()
+                )
+        ).thenReturn(normalizedJobData);
+
+        /*
+         * This is the critical scenario:
+         *
+         * same source + external ID
+         * but canonical fingerprint has changed
+         * because experience changed.
+         */
+        when(
+                jobSourceListingService.findJobBySourceAndExternalJobId(
+                        "GREENHOUSE",
+                        "greenhouse-5001"
+                )
+        ).thenReturn(existingJob);
+
+        boolean created =
+                jobIngestionItemService.ingestListing(
+                        company.getId(),
+                        company.getDisplayName(),
+                        "GREENHOUSE",
+                        rawJobListing
+                );
+
+        assertThat(created)
+                .isFalse();
+
+        Job updatedJob =
+                jobRepository.findById(existingJob.getId())
+                        .orElseThrow();
+
+        assertThat(updatedJob.getId())
+                .isEqualTo(existingJob.getId());
+
+        assertThat(updatedJob.getExperienceMinYears())
+                .isEqualByComparingTo("8.0");
+
+        assertThat(updatedJob.getExperienceMaxYears())
+                .isNull();
+
+        assertThat(updatedJob.getDescriptionHash())
+                .isEqualTo("same-hash");
+
+        /*
+         * The fingerprint should now represent the latest
+         * normalized state of the job.
+         */
+        assertThat(updatedJob.getCanonicalFingerprint())
+                .isEqualTo("fingerprint-experience-new");
+
+        verifyNoInteractions(
+                jobRequirementExtractionService
+        );
     }
 
     private NormalizedJobData createNormalizedJobData(

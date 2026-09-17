@@ -29,15 +29,15 @@ class JobNormalizerTest {
     );
 
     @Test
-    void shouldNormalizeAndParseJob() {
+    void shouldNormalizeAndParseHtmlJobDescription() {
+
         RawJobListing rawJobListing = new RawJobListing(
                 "123",
                 "  Senior  Software   Engineer  ",
                 """
-                        We are looking for a backend engineer.
-                        
-                        Candidates should have 2-4 years of experience.
-                        Salary: 8 LPA - 12 LPA INR
+                        <p>We are looking for a backend engineer.</p>
+                        <p>Candidates should have <strong>2-4 years</strong> of experience.</p>
+                        <p>Salary: <strong>8 LPA - 12 LPA INR</strong></p>
                         """,
                 " HTTPS://example.com/jobs/123?source=linkedin ",
                 "https://example.com/apply/123?utm_source=linkedin",
@@ -47,22 +47,42 @@ class JobNormalizerTest {
         );
 
         NormalizedJobData result =
-                normalizer.normalize(rawJobListing, "  Example   Company  ");
+                normalizer.normalize(
+                        rawJobListing,
+                        "  Example   Company  "
+                );
 
-        assertEquals("  Example   Company  ", result.companyName());
-        assertEquals("example company", result.normalizedCompanyName());
+        assertEquals(
+                "  Example   Company  ",
+                result.companyName()
+        );
+
+        assertEquals(
+                "example company",
+                result.normalizedCompanyName()
+        );
 
         assertEquals(
                 "  Senior  Software   Engineer  ",
                 result.title()
         );
+
         assertEquals(
                 "senior software engineer",
                 result.normalizedTitle()
         );
 
+        /*
+         * JobTextNormalizer normalizes whitespace but does not remove HTML.
+         * The normalized description stored in NormalizedJobData therefore
+         * still contains the HTML.
+         */
         assertEquals(
-                "We are looking for a backend engineer.\n\nCandidates should have 2-4 years of experience.\nSalary: 8 LPA - 12 LPA INR",
+                """
+                <p>We are looking for a backend engineer.</p>
+                <p>Candidates should have <strong>2-4 years</strong> of experience.</p>
+                <p>Salary: <strong>8 LPA - 12 LPA INR</strong></p>
+                """.trim(),
                 result.description()
         );
 
@@ -86,6 +106,10 @@ class JobNormalizerTest {
                 result.seniorityLevel()
         );
 
+        /*
+         * These assertions prove that JobNormalizer cleaned the HTML
+         * before passing the description to ExperienceParser.
+         */
         assertEquals(
                 0,
                 result.experienceMinYears().compareTo(
@@ -100,6 +124,10 @@ class JobNormalizerTest {
                 )
         );
 
+        /*
+         * These assertions prove that SalaryParser also received
+         * the cleaned description.
+         */
         assertEquals(
                 new BigDecimal("800000"),
                 result.salaryMin()
@@ -121,6 +149,10 @@ class JobNormalizerTest {
         );
 
         assertNotNull(result.descriptionHash());
-        assertEquals(64, result.descriptionHash().length());
+
+        assertEquals(
+                64,
+                result.descriptionHash().length()
+        );
     }
 }

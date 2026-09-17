@@ -16,7 +16,7 @@ import java.time.Instant;
                 @Index(name = "idx_jobs_posted_at",columnList = "posted_at"),
                 @Index(name = "idx_jobs_status",columnList = "status"),
                 @Index(name = "idx_jobs_last_seen_at",columnList = "last_seen_at"),
-
+                @Index(name = "idx_jobs_canonical_fingerprint",columnList = "canonical_fingerprint")
         }
 )
 public class Job extends AuditableEntity {
@@ -69,7 +69,7 @@ public class Job extends AuditableEntity {
     @Column(name = "canonical_application_url",length = 2048)
     private String canonicalApplicationUrl;
 
-    @Column(name = "canonical_fingerprint",nullable = false,length = 64,unique = true)
+    @Column(name = "canonical_fingerprint",nullable = false,length = 64)
     private String canonicalFingerprint;
 
     @Column(name = "description_hash",length = 64)
@@ -86,7 +86,7 @@ public class Job extends AuditableEntity {
     private Instant lastSeenAt;
 
     protected Job(){
-        //requried by JPA
+        //required by JPA
     }
 
     public Job(
@@ -138,4 +138,27 @@ public class Job extends AuditableEntity {
         this.description = description;
         this.descriptionHash = descriptionHash;
     }
+
+    public void updateNormalizedFields(
+            EmploymentType employmentType,
+            SeniorityLevel seniorityLevel,
+            BigDecimal experienceMinYears,
+            BigDecimal experienceMaxYears,
+            BigDecimal salaryMin,
+            BigDecimal salaryMax,
+            String salaryCurrency,
+            String canonicalApplicationUrl,
+            String canonicalFingerprint
+    ) {
+        this.employmentType = employmentType;
+        this.seniorityLevel = seniorityLevel;
+        this.experienceMinYears = experienceMinYears;
+        this.experienceMaxYears = experienceMaxYears;
+        this.salaryMin = salaryMin;
+        this.salaryMax = salaryMax;
+        this.salaryCurrency = salaryCurrency;
+        this.canonicalApplicationUrl = canonicalApplicationUrl;
+        this.canonicalFingerprint = canonicalFingerprint;
+    }
+
 }

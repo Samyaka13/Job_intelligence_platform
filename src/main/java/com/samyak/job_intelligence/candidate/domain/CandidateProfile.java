@@ -61,4 +61,36 @@ public class CandidateProfile extends AuditableEntity {
         this.experienceYears = experienceYears;
         this.preferredEmploymentTypes = preferredEmploymentTypes;
     }
+
+    public void updateName(String name) {
+        this.name = name;
+    }
+
+    public void updateEmail(String email) {
+        this.email = email;
+    }
+
+    public void updateCurrentLocation(String currentLocation) {
+        this.currentLocation = currentLocation;
+    }
+
+    public void updatePreferredLocations(JsonNode preferredLocations) {
+        this.preferredLocations = preferredLocations;
+    }
+
+    public void updateMinimumSalary(BigDecimal minimumSalary) {
+        this.minimumSalary = minimumSalary;
+    }
+
+    public void updateMinimumSalaryCurrency(String minimumSalaryCurrency) {
+        this.minimumSalaryCurrency = minimumSalaryCurrency;
+    }
+
+    public void updateExperienceYears(BigDecimal experienceYears) {
+        this.experienceYears = experienceYears;
+    }
+
+    public void updatePreferredEmploymentTypes(JsonNode preferredEmploymentTypes) {
+        this.preferredEmploymentTypes = preferredEmploymentTypes;
+    }
 }

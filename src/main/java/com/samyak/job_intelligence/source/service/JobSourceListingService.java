@@ -60,10 +60,10 @@ public class JobSourceListingService {
     }
 
     @Transactional
-    public int deactivateMissingListings(String sourceCode, Set<String> seenExternalJobIds){
+    public int deactivateMissingListings(Long companyId,String sourceCode, Set<String> seenExternalJobIds){
         JobSource jobSource = jobSourceService.getByCode(sourceCode);
 
-        List<JobSourceListing> activeListings = jobSourceListingRepository.findByJobSourceIdAndIsActiveTrue(jobSource.getId());
+        List<JobSourceListing> activeListings = jobSourceListingRepository.findByJob_Company_IdAndJobSource_IdAndIsActiveTrue(companyId,jobSource.getId());
         int deactivated = 0;
         for(JobSourceListing listing : activeListings){
             String externalJobId = listing.getExternalJobId();

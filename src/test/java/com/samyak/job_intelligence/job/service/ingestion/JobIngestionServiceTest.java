@@ -13,8 +13,11 @@ import java.time.Instant;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.ArgumentMatchers.anySet;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.same;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class JobIngestionServiceTest {
@@ -82,6 +85,7 @@ class JobIngestionServiceTest {
         )).thenReturn(false);
 
         when(jobSourceListingService.deactivateMissingListings(
+                eq(companyId),
                 eq("GREENHOUSE"),
                 anySet()
         )).thenReturn(0);
@@ -133,11 +137,11 @@ class JobIngestionServiceTest {
 
         verify(jobSourceListingService)
                 .deactivateMissingListings(
+                        eq(companyId),
                         eq("GREENHOUSE"),
                         anySet()
                 );
     }
-
 
     @Test
     void shouldContinueProcessingWhenOneListingFails() {
@@ -220,6 +224,7 @@ class JobIngestionServiceTest {
         )).thenReturn(true);
 
         when(jobSourceListingService.deactivateMissingListings(
+                eq(companyId),
                 eq("GREENHOUSE"),
                 anySet()
         )).thenReturn(0);
@@ -278,14 +283,15 @@ class JobIngestionServiceTest {
                         listing3
                 );
 
-        // Deactivation happens once after the whole batch
+        // Deactivation happens once after the whole batch,
+        // scoped to the company + source.
         verify(jobSourceListingService)
                 .deactivateMissingListings(
+                        eq(companyId),
                         eq("GREENHOUSE"),
                         anySet()
                 );
     }
-
 
     @Test
     void shouldCountUpdatedJobWhenItemServiceReturnsFalse() {
@@ -319,6 +325,7 @@ class JobIngestionServiceTest {
         )).thenReturn(false);
 
         when(jobSourceListingService.deactivateMissingListings(
+                eq(companyId),
                 eq("GREENHOUSE"),
                 anySet()
         )).thenReturn(0);
@@ -348,5 +355,15 @@ class JobIngestionServiceTest {
 
         assertThat(result.failed())
                 .isEqualTo(0);
+
+        assertThat(result.deactivated())
+                .isEqualTo(0);
+
+        verify(jobSourceListingService)
+                .deactivateMissingListings(
+                        eq(companyId),
+                        eq("GREENHOUSE"),
+                        anySet()
+                );
     }
 }

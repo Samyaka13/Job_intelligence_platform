@@ -46,7 +46,7 @@ class JobBatchMatchEvaluationServiceTest {
         when(job2.getId()).thenReturn(2L);
         when(job3.getId()).thenReturn(3L);
 
-        when(jobRepository.findByStatusOrderByPostedAtDesc(JobStatus.ACTIVE))
+        when(jobRepository.findAvailableByStatusOrderByPostedAtDesc(JobStatus.ACTIVE))
                 .thenReturn(List.of(job1, job2, job3));
 
         when(jobMatchEvaluationService.evaluate(1L, candidateProfileId))
@@ -64,7 +64,7 @@ class JobBatchMatchEvaluationServiceTest {
                 .containsExactly(match1, match2, match3);
 
         verify(jobRepository)
-                .findByStatusOrderByPostedAtDesc(JobStatus.ACTIVE);
+                .findAvailableByStatusOrderByPostedAtDesc(JobStatus.ACTIVE);
 
         verify(jobMatchEvaluationService)
                 .evaluate(1L, candidateProfileId);

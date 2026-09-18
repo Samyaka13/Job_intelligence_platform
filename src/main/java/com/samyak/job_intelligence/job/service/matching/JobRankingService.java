@@ -17,6 +17,6 @@ public class JobRankingService {
     }
 
     public List<JobMatch> rank(Long candidateProfileId){
-        return jobMatchRepository.findByCandidateProfileIdAndHardQualifiedTrueOrderByFinalScoreDescEvaluatedAtDesc(candidateProfileId);
+        return jobMatchRepository.findCurrentlyEligibleMatches(candidateProfileId);
     }
 }

@@ -11,5 +11,8 @@ public interface JobSourceListingRepository extends JpaRepository<JobSourceListi
 
     boolean existsByJobSourceIdAndExternalJobId(Long jobSourceId,String externalJobId);
 
-    List<JobSourceListing> findByJobSourceIdAndIsActiveTrue(Long jobSourceId);
+    List<JobSourceListing> findByJob_Company_IdAndJobSource_IdAndIsActiveTrue(
+            Long companyId,
+            Long jobSourceId
+    );
 }

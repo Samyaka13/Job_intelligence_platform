@@ -77,6 +77,7 @@ public class JobIngestionService {
 
         int deactivated =
                 jobSourceListingService.deactivateMissingListings(
+                        companyId,
                         sourceCode,
                         seenExternalJobIds
                 );

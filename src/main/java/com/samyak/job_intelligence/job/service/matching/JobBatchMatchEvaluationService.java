@@ -22,7 +22,7 @@ public class JobBatchMatchEvaluationService {
     }
 
     public List<JobMatch> evaluate(Long candidateProfileId){
-        List<Job> jobs = jobRepository.findByStatusOrderByPostedAtDesc(JobStatus.ACTIVE);
+        List<Job> jobs = jobRepository.findAvailableByStatusOrderByPostedAtDesc(JobStatus.ACTIVE);
         return jobs.stream().map(job -> jobMatchEvaluationService.evaluate(job.getId(),candidateProfileId)).toList();
     }
 }

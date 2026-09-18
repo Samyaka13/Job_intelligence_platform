@@ -160,7 +160,7 @@ class JobMatchRepositoryTest {
 
         List<JobMatch> matches =
                 jobMatchRepository
-                        .findByCandidateProfileIdAndHardQualifiedTrueOrderByFinalScoreDescEvaluatedAtDesc(
+                        .findCurrentlyEligibleMatches(
                                 candidateA.getId()
                         );
 

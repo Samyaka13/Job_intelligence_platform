@@ -10,6 +10,7 @@ import com.samyak.job_intelligence.job.service.requirement.JobRequirementExtract
 import com.samyak.job_intelligence.job.service.requirement.JobRequirementService;
 import com.samyak.job_intelligence.source.service.JobSourceListingService;
 import com.samyak.job_intelligence.source.service.RawJobListing;
+import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -142,15 +143,24 @@ public class JobIngestionItemService {
         );
 
         if(created ||  descriptionChanged) {
-            List<ExtractedJobRequirement> requirements =
-                    jobRequirementExtractionService.extract(
-                            normalizedJobData.description()
-                    );
+
+           try(MDC.MDCCloseable ignored =
+                       MDC.putCloseable("jobId", String.valueOf(job.getId()))){
+               System.out.printf(
+                       "LLM INPUT | job=%d | descriptionChars=%d%n",
+                       job.getId(),
+                       normalizedJobData.description().length()
+               );
+                List<ExtractedJobRequirement> requirements =
+                        jobRequirementExtractionService.extract(
+                                normalizedJobData.description()
+                        );
 
             jobRequirementService.replaceRequirements(
                     job.getId(),
                     requirements
             );
+           }
         }
 
         return created;

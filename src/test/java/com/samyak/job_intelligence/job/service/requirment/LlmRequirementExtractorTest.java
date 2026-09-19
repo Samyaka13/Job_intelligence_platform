@@ -135,8 +135,7 @@ class LlmRequirementExtractorTest {
                         llmClient,
                         promptBuilder,
                         requirementMapper,
-                        objectMapper,
-                        jobDescriptionCleaner
+                        objectMapper
 
                 );
 
@@ -178,8 +177,7 @@ class LlmRequirementExtractorTest {
                         llmClient,
                         promptBuilder,
                         requirementMapper,
-                        objectMapper,
-                        jobDescriptionCleaner
+                        objectMapper
                 );
 
         assertThat(extractor.extract(" "))
@@ -225,8 +223,7 @@ class LlmRequirementExtractorTest {
                         llmClient,
                         promptBuilder,
                         requirementMapper,
-                        objectMapper,
-                        jobDescriptionCleaner
+                        objectMapper
                 );
 
         assertThat(

@@ -53,7 +53,7 @@ public class JobIngestionItemService {
 
 
         NormalizedJobData normalizedJobData =
-                jobNormalizer.normalize(rawJobListing, companyName);
+                jobNormalizer.normalize(rawJobListing, companyName,sourceCode);
 
         Job job = jobSourceListingService.findJobBySourceAndExternalJobId(sourceCode, rawJobListing.externalJobId());
 

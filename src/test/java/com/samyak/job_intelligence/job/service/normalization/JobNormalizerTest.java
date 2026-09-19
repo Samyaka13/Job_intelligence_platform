@@ -49,7 +49,8 @@ class JobNormalizerTest {
         NormalizedJobData result =
                 normalizer.normalize(
                         rawJobListing,
-                        "  Example   Company  "
+                        "  Example   Company  ",
+                        "GREENHOUSE"
                 );
 
         assertEquals(

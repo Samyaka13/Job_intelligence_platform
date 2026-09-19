@@ -32,21 +32,16 @@ public class JobNormalizer {
         this.jobFingerprintGenerator = jobFingerprintGenerator;
     }
 
-    public NormalizedJobData normalize(RawJobListing rawJobListing,String companyName){
+    public NormalizedJobData normalize(RawJobListing rawJobListing,String companyName,String sourceCode) {
         String normalizedCompanyName = TextNormalizationSupport.normalizeWhitespaceAndCase(companyName);
         String normalizedTitle = TextNormalizationSupport.normalizeWhitespaceAndCase(rawJobListing.title());
         String normalizedDescription = jobTextNormalizer.normalizeDescription(rawJobListing.description());
         String cleanedUpDescriptionFromHTML = JobDescriptionCleaner.clean(normalizedDescription);
 
-        String normalizedSourceUrl = jobUrlNormalizer.normalize(rawJobListing.sourceUrl());
-        String normalizedApplicationUrl = jobUrlNormalizer.normalize(rawJobListing.applicationUrl());
+        String normalizedSourceUrl = jobUrlNormalizer.normalize(rawJobListing.sourceUrl(),sourceCode);
+        String normalizedApplicationUrl = jobUrlNormalizer.normalize(rawJobListing.applicationUrl(),sourceCode);
         String descriptionHash = descriptionHashGenerator.generate(normalizedDescription);
         ExperienceRange experienceRange = experienceParser.parse(cleanedUpDescriptionFromHTML);
-        System.out.println(
-                "JOB NORMALIZER -> title=" + rawJobListing.title()
-                        + ", min=" + experienceRange.minYears()
-                        + ", max=" + experienceRange.maxYears()
-        );
         EmploymentType employmentType = employmentTypeParser.parse(rawJobListing.title());
         SeniorityLevel seniorityLevel = seniorityParser.parse(rawJobListing.title());
         SalaryRange salaryRange = salaryParser.parse(cleanedUpDescriptionFromHTML);

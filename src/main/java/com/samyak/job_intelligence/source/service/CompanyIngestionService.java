@@ -26,7 +26,6 @@ public class CompanyIngestionService {
         this.jobIngestionService = jobIngestionService;
     }
 
-    @Transactional
     public List<JobIngestionResult> ingest(Long companyId){
         Company company = companyService.getById(companyId);
         List<SourceConfiguration> configurations = sourceConfigurationService.getEnabledForCompany(companyId);

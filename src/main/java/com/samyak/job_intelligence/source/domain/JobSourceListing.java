@@ -89,5 +89,8 @@ public class JobSourceListing extends AuditableEntity {
     public void deactivate(){
        this.isActive = false;
     }
+    public void reassignTo(Job job) {
+        this.job = job;
+    }
 
 }

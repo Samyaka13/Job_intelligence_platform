@@ -10,6 +10,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class JobFingerprintGenerator {
@@ -44,14 +45,26 @@ public class JobFingerprintGenerator {
 
         return sha256(canonicalInput);
     }
-
+//This function is made like if the location city location state or location country is not present then we consider display name and if any of them is present then we ignore display text so that redundant data does go inside the fingerprint generated
     private String normalizeLocation(NormalizedJobLocation location) {
-        return String.join(
-                ",",
-                safe(location.city()),
-                safe(location.state()),
-                safe(location.country())
-        );
+        boolean hasStructuredLocation =
+                (location.city() != null && !location.city().isBlank())
+                        || (location.state() != null && !location.state().isBlank())
+                        || (location.country() != null && !location.country().isBlank());
+
+        if (hasStructuredLocation) {
+            return Stream.of(
+                            location.city(),
+                            location.state(),
+                            location.country()
+                    )
+                    .filter(value -> value != null && !value.isBlank())
+                    .map(String::trim)
+                    .map(String::toLowerCase)
+                    .collect(Collectors.joining(","));
+        }
+
+        return safe(location.displayText()).trim().toLowerCase();
     }
     private String safe(String value) {
         return value == null ? "" : value;

@@ -4,12 +4,14 @@ import com.samyak.job_intelligence.source.domain.SourceConfiguration;
 import com.samyak.job_intelligence.source.service.JobSourceCollector;
 import com.samyak.job_intelligence.source.service.JobSourceListingService;
 import com.samyak.job_intelligence.source.service.RawJobListing;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Slf4j
 @Service
 public class JobIngestionService {
 
@@ -71,7 +73,18 @@ public class JobIngestionService {
 
             } catch (Exception e) {
                 failed++;
-                e.printStackTrace();
+                System.err.println(
+                        "INGESTION FAILED -> externalJobId=" +
+                                rawJobListing.externalJobId() +
+                                ", title=" +
+                                rawJobListing.title()
+                );
+                log.error("Job ingestion failed: companyId={}, source={}, externalJobId={}, title={}",
+                        companyId,
+                        sourceCode,
+                        rawJobListing.externalJobId(),
+                        rawJobListing.title(),
+                        e);
             }
         }
 

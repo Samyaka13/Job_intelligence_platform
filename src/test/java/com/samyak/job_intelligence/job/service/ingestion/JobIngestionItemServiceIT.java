@@ -141,7 +141,8 @@ class JobIngestionItemServiceIT {
         when(
                 jobNormalizer.normalize(
                         rawJobListing,
-                        company.getDisplayName()
+                        company.getDisplayName(),
+                        "GREENHOUSE"
                 )
         ).thenReturn(normalizedJobData);
 
@@ -269,7 +270,9 @@ class JobIngestionItemServiceIT {
         when(
                 jobNormalizer.normalize(
                         rawJobListing,
-                        company.getDisplayName()
+                        company.getDisplayName(),
+                        "GREENHOUSE"
+
                 )
         ).thenReturn(normalizedJobData);
 
@@ -371,7 +374,9 @@ class JobIngestionItemServiceIT {
         when(
                 jobNormalizer.normalize(
                         rawJobListing,
-                        company.getDisplayName()
+                        company.getDisplayName(),
+                        "GREENHOUSE"
+
                 )
         ).thenReturn(normalizedJobData);
 
@@ -498,7 +503,9 @@ class JobIngestionItemServiceIT {
         when(
                 jobNormalizer.normalize(
                         rawJobListing,
-                        company.getDisplayName()
+                        company.getDisplayName(),
+                        "GREENHOUSE"
+
                 )
         ).thenReturn(normalizedJobData);
 
@@ -622,7 +629,9 @@ class JobIngestionItemServiceIT {
         when(
                 jobNormalizer.normalize(
                         rawJobListing,
-                        company.getDisplayName()
+                        company.getDisplayName(),
+                        "GREENHOUSE"
+
                 )
         ).thenReturn(normalizedJobData);
 

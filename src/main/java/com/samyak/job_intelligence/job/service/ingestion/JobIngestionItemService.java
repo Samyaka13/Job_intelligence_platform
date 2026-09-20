@@ -8,6 +8,7 @@ import com.samyak.job_intelligence.job.service.normalization.NormalizedJobData;
 import com.samyak.job_intelligence.job.service.requirement.ExtractedJobRequirement;
 import com.samyak.job_intelligence.job.service.requirement.JobRequirementExtractionService;
 import com.samyak.job_intelligence.job.service.requirement.JobRequirementService;
+import com.samyak.job_intelligence.llm.JobDescriptionCleaner;
 import com.samyak.job_intelligence.source.service.JobSourceListingService;
 import com.samyak.job_intelligence.source.service.RawJobListing;
 import org.slf4j.MDC;
@@ -149,11 +150,11 @@ public class JobIngestionItemService {
                System.out.printf(
                        "LLM INPUT | job=%d | descriptionChars=%d%n",
                        job.getId(),
-                       normalizedJobData.description().length()
+                       JobDescriptionCleaner.clean(normalizedJobData.description()).length()
                );
                 List<ExtractedJobRequirement> requirements =
                         jobRequirementExtractionService.extract(
-                                normalizedJobData.description()
+                                JobDescriptionCleaner.clean(normalizedJobData.description())
                         );
 
             jobRequirementService.replaceRequirements(

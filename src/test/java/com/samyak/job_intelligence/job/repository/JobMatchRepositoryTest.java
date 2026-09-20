@@ -221,7 +221,6 @@ class JobMatchRepositoryTest {
                 "description-hash-" + fingerprint
         );
     }
-
     private JobMatch createMatch(
             Job job,
             CandidateProfile candidate,
@@ -244,7 +243,9 @@ class JobMatchRepositoryTest {
                 null,
                 null,
                 null,
-                evaluatedAt
+                evaluatedAt,
+                List.of(),
+                List.of()
         );
     }
 }

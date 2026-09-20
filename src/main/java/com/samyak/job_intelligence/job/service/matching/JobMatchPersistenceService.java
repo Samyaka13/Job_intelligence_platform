@@ -80,7 +80,9 @@ public class JobMatchPersistenceService {
                     data.llmProvider(),
                     data.llmModel(),
                     data.llmPromptVersion(),
-                    data.evaluatedAt()
+                    data.evaluatedAt(),
+                    data.mandatorySkills(),
+                    data.missingMandatorySkills()
             );
 
             return jobMatchRepository.save(jobMatch);
@@ -100,7 +102,9 @@ public class JobMatchPersistenceService {
                 data.llmProvider(),
                 data.llmModel(),
                 data.llmPromptVersion(),
-                data.evaluatedAt()
+                data.evaluatedAt(),
+                data.mandatorySkills(),
+                data.missingMandatorySkills()
         );
 
         return jobMatchRepository.save(newJobMatch);

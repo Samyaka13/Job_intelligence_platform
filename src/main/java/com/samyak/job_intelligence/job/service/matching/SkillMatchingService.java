@@ -27,7 +27,7 @@ public class SkillMatchingService {
         requirements.addAll(jobRequirementRepository.findByJobIdAndRequirementType(jobId,RequirementType.TECHNOLOGY));
 
         if(requirements.isEmpty()){
-            return new SkillMatchResult(List.of(),List.of(),List.of(),0,0);
+            return new SkillMatchResult(List.of(),List.of(),List.of(),List.of(),0,0);
         }
 
         List<SkillRequirement> skillRequirements = requirements.stream()
@@ -59,10 +59,15 @@ public class SkillMatchingService {
         long mandatoryRequirements = skillRequirements.stream()
                 .filter(SkillRequirement::mandatory)
                 .count();
+        List<String> mandatorySkills = skillRequirements.stream()
+                .filter(SkillRequirement::mandatory)
+                .map(SkillRequirement::skill)
+                .toList();
 
         return new SkillMatchResult(
                 matchedSkills,
                 missingSkills,
+                mandatorySkills,
                 missingMandatorySkills,
                 requiredSkills.size(),
                 (int) mandatoryRequirements

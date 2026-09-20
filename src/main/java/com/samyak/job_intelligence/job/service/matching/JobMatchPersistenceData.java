@@ -2,6 +2,7 @@ package com.samyak.job_intelligence.job.service.matching;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 public record JobMatchPersistenceData(
         boolean hardQualified,
@@ -16,6 +17,8 @@ public record JobMatchPersistenceData(
         String llmProvider,
         String llmModel,
         String llmPromptVersion,
-        Instant evaluatedAt
+        Instant evaluatedAt,
+        List<String> mandatorySkills,
+        List<String> missingMandatorySkills
 ) {
 }

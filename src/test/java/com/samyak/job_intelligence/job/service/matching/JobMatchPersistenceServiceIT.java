@@ -108,7 +108,7 @@ class JobMatchPersistenceServiceIT {
         JobMatchResult matchResult =
                 new JobMatchResult(
                         true,
-                        java.util.List.of(),
+                        List.of(),
                         new SkillMatchScore(
                                 new BigDecimal("0.8500"),
                                 new BigDecimal("0.8000"),
@@ -116,9 +116,10 @@ class JobMatchPersistenceServiceIT {
                                 false
                         ),
                         new SkillMatchResult(
-                                java.util.List.of("java", "spring boot"),
-                                java.util.List.of("docker"),
-                                java.util.List.of(),
+                                List.of("java"),
+                                List.of("spring boot", "docker"),
+                                List.of("java", "spring boot"),
+                                List.of("spring boot"),
                                 3,
                                 2
                         ),
@@ -162,12 +163,19 @@ class JobMatchPersistenceServiceIT {
 
         assertThat(retrieved.getMatchReasoning())
                 .isEqualTo(
-                        "Matched skills: java, spring boot; Missing skills: docker"
+                        "Matched skills: java; Missing skills: spring boot, docker"
                 );
+
+        assertThat(retrieved.getMandatorySkills())
+                .containsExactly("java", "spring boot");
+
+        assertThat(retrieved.getMissingMandatorySkills())
+                .containsExactly("spring boot");
 
         assertThat(retrieved.getEvaluatedAt())
                 .isEqualTo(evaluatedAt);
     }
+
     @Test
     void shouldUpdateExistingJobMatch() {
 
@@ -215,12 +223,13 @@ class JobMatchPersistenceServiceIT {
                         )
                 );
 
-        Instant firstEvaluation = Instant.now().minusSeconds(100);
+        Instant firstEvaluation =
+                Instant.now().minusSeconds(100);
 
         JobMatchResult firstResult =
                 new JobMatchResult(
                         true,
-                        java.util.List.of(),
+                        List.of(),
                         new SkillMatchScore(
                                 new BigDecimal("0.7000"),
                                 new BigDecimal("0.7000"),
@@ -228,9 +237,10 @@ class JobMatchPersistenceServiceIT {
                                 false
                         ),
                         new SkillMatchResult(
-                                java.util.List.of("java"),
-                                java.util.List.of("docker"),
-                                java.util.List.of(),
+                                List.of("java"),
+                                List.of("docker"),
+                                List.of("java", "docker"),
+                                List.of("docker"),
                                 2,
                                 1
                         ),
@@ -246,6 +256,13 @@ class JobMatchPersistenceServiceIT {
                 );
 
         assertThat(firstSaved.getId()).isNotNull();
+
+        assertThat(firstSaved.getMandatorySkills())
+                .containsExactly("java", "docker");
+
+        assertThat(firstSaved.getMissingMandatorySkills())
+                .containsExactly("docker");
+
         assertThat(firstSaved.getFinalScore())
                 .isEqualByComparingTo("70.00");
 
@@ -254,7 +271,7 @@ class JobMatchPersistenceServiceIT {
         JobMatchResult secondResult =
                 new JobMatchResult(
                         true,
-                        java.util.List.of(),
+                        List.of(),
                         new SkillMatchScore(
                                 new BigDecimal("0.9000"),
                                 new BigDecimal("0.9000"),
@@ -263,8 +280,9 @@ class JobMatchPersistenceServiceIT {
                         ),
                         new SkillMatchResult(
                                 List.of("java", "docker"),
-                                java.util.List.of(),
-                                java.util.List.of(),
+                                List.of(),
+                                List.of("java", "docker"),
+                                List.of(),
                                 2,
                                 2
                         ),
@@ -303,6 +321,12 @@ class JobMatchPersistenceServiceIT {
                 .isEqualTo(
                         "Matched skills: java, docker; Missing skills: "
                 );
+
+        assertThat(retrieved.getMandatorySkills())
+                .containsExactly("java", "docker");
+
+        assertThat(retrieved.getMissingMandatorySkills())
+                .isEmpty();
 
         assertThat(retrieved.getEvaluatedAt())
                 .isEqualTo(secondEvaluation);

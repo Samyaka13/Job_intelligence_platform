@@ -5,11 +5,14 @@ import com.samyak.job_intelligence.candidate.domain.CandidateProfile;
 import com.samyak.job_intelligence.common.persistence.AuditableEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
+import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
+import org.hibernate.type.SqlTypes;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 
 
 @Getter
@@ -76,12 +79,19 @@ public class JobMatch extends AuditableEntity {
     @Column(name = "evaluated_at",nullable = false)
     private Instant evaluatedAt;
 
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "mandatory_skills", columnDefinition = "jsonb")
+    private List<String> mandatorySkills = List.of();
+
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "missing_mandatory_skills", columnDefinition = "jsonb")
+    private List<String> missingMandatorySkills = List.of();
 
     protected JobMatch() {
         //required by JPA
     }
 
-    public JobMatch(Job job, CandidateProfile candidateProfile, boolean hardQualified, BigDecimal skillScore, BigDecimal experienceScore, BigDecimal roleScore, BigDecimal locationScore, BigDecimal salaryScore, BigDecimal semanticScore, BigDecimal finalScore, String matchReasoning, String llmProvider, String llmModel, String llmPromptVersion, Instant evaluatedAt) {
+    public JobMatch(Job job, CandidateProfile candidateProfile, boolean hardQualified, BigDecimal skillScore, BigDecimal experienceScore, BigDecimal roleScore, BigDecimal locationScore, BigDecimal semanticScore, BigDecimal salaryScore, BigDecimal finalScore, String matchReasoning, String llmProvider, String llmModel, String llmPromptVersion, Instant evaluatedAt, List<String> mandatorySkills, List<String> missingMandatorySkills) {
         this.job = job;
         this.candidateProfile = candidateProfile;
         this.hardQualified = hardQualified;
@@ -89,14 +99,16 @@ public class JobMatch extends AuditableEntity {
         this.experienceScore = experienceScore;
         this.roleScore = roleScore;
         this.locationScore = locationScore;
-        this.salaryScore = salaryScore;
         this.semanticScore = semanticScore;
+        this.salaryScore = salaryScore;
         this.finalScore = finalScore;
         this.matchReasoning = matchReasoning;
         this.llmProvider = llmProvider;
         this.llmModel = llmModel;
         this.llmPromptVersion = llmPromptVersion;
         this.evaluatedAt = evaluatedAt;
+        this.mandatorySkills = mandatorySkills;
+        this.missingMandatorySkills = missingMandatorySkills;
     }
 
     public void update(
@@ -112,7 +124,9 @@ public class JobMatch extends AuditableEntity {
             String llmProvider,
             String llmModel,
             String llmPromptVersion,
-            Instant evaluatedAt
+            Instant evaluatedAt,
+            List<String> mandatorySkills,
+            List<String> missingMandatorySkills
     ) {
         this.hardQualified = hardQualified;
         this.skillScore = skillScore;
@@ -127,6 +141,8 @@ public class JobMatch extends AuditableEntity {
         this.llmModel = llmModel;
         this.llmPromptVersion = llmPromptVersion;
         this.evaluatedAt = evaluatedAt;
+        this.mandatorySkills = mandatorySkills;
+        this.missingMandatorySkills = missingMandatorySkills;
     }
 
 }

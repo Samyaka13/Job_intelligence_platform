@@ -60,6 +60,7 @@ class JobMatchingServiceTest {
         SkillMatchResult skillMatchResult = new SkillMatchResult(
                 List.of("java", "spring boot"),
                 List.of("kafka"),
+                List.of("java", "spring boot"),
                 List.of(),
                 3,
                 2
@@ -162,6 +163,7 @@ class JobMatchingServiceTest {
                 JobQualificationResult.qualifiedListing();
 
         SkillMatchResult skillMatchResult = new SkillMatchResult(
+                List.of(),
                 List.of(),
                 List.of(),
                 List.of(),

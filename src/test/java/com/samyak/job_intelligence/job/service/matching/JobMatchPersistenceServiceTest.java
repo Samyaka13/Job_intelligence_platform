@@ -14,6 +14,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -62,10 +63,13 @@ class JobMatchPersistenceServiceTest {
                         null,
                         null,
                         null,
-                        evaluatedAt
+                        evaluatedAt,
+                        List.of("java", "spring boot"),
+                        List.of("spring boot")
                 );
 
         when(jobService.getById(jobId)).thenReturn(job);
+
         when(candidateProfileRepository.findById(candidateProfileId))
                 .thenReturn(Optional.of(candidateProfile));
 
@@ -106,13 +110,36 @@ class JobMatchPersistenceServiceTest {
         assertSame(job, captured.getJob());
         assertSame(candidateProfile, captured.getCandidateProfile());
         assertTrue(captured.isHardQualified());
-        assertEquals(new BigDecimal("85.00"), captured.getSkillScore());
-        assertEquals(new BigDecimal("85.00"), captured.getFinalScore());
+
+        assertEquals(
+                new BigDecimal("85.00"),
+                captured.getSkillScore()
+        );
+
+        assertEquals(
+                new BigDecimal("85.00"),
+                captured.getFinalScore()
+        );
+
         assertEquals(
                 "Matched skills: java; Missing skills: docker",
                 captured.getMatchReasoning()
         );
-        assertEquals(evaluatedAt, captured.getEvaluatedAt());
+
+        assertEquals(
+                List.of("java", "spring boot"),
+                captured.getMandatorySkills()
+        );
+
+        assertEquals(
+                List.of("spring boot"),
+                captured.getMissingMandatorySkills()
+        );
+
+        assertEquals(
+                evaluatedAt,
+                captured.getEvaluatedAt()
+        );
     }
 
     @Test
@@ -141,7 +168,9 @@ class JobMatchPersistenceServiceTest {
                         null,
                         null,
                         null,
-                        evaluatedAt.minusSeconds(100)
+                        evaluatedAt.minusSeconds(100),
+                        List.of("java"),
+                        List.of("java")
                 );
 
         JobMatchPersistenceData data =
@@ -158,7 +187,9 @@ class JobMatchPersistenceServiceTest {
                         null,
                         null,
                         null,
-                        evaluatedAt
+                        evaluatedAt,
+                        List.of("java", "docker"),
+                        List.of()
                 );
 
         when(jobService.getById(jobId)).thenReturn(job);
@@ -192,18 +223,32 @@ class JobMatchPersistenceServiceTest {
         assertSame(existingJobMatch, result);
 
         assertTrue(existingJobMatch.isHardQualified());
+
         assertEquals(
                 new BigDecimal("90.00"),
                 existingJobMatch.getSkillScore()
         );
+
         assertEquals(
                 new BigDecimal("90.00"),
                 existingJobMatch.getFinalScore()
         );
+
         assertEquals(
                 "New reasoning",
                 existingJobMatch.getMatchReasoning()
         );
+
+        assertEquals(
+                List.of("java", "docker"),
+                existingJobMatch.getMandatorySkills()
+        );
+
+        assertEquals(
+                List.of(),
+                existingJobMatch.getMissingMandatorySkills()
+        );
+
         assertEquals(
                 evaluatedAt,
                 existingJobMatch.getEvaluatedAt()

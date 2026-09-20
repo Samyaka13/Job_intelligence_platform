@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.Instant;
+import java.util.List;
 
 @Component
 public class JobMatchPersistenceMapper {
@@ -27,10 +28,13 @@ public class JobMatchPersistenceMapper {
                     null,
                     null,
                     null,
-                    evaluatedAt
+                    evaluatedAt,
+                    List.of(),
+                    List.of()
             );
         }
-
+        SkillMatchResult skillMatchResult =
+                matchResult.skillMatchResult();
         BigDecimal skillScore =
                 matchResult.skillMatchScore()
                         .score()
@@ -50,7 +54,9 @@ public class JobMatchPersistenceMapper {
                 null,
                 null,
                 null,
-                evaluatedAt
+                evaluatedAt,
+                skillMatchResult.mandatorySkills(),
+                skillMatchResult.missingMandatorySkills()
         );
     }
 

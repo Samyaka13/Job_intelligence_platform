@@ -2,6 +2,7 @@ package com.samyak.job_intelligence.candidate.normalization;
 
 import org.springframework.stereotype.Component;
 import com.samyak.job_intelligence.common.normalization.TextNormalizationSupport;
+
 import java.util.List;
 
 @Component
@@ -13,9 +14,27 @@ public class CandidateTextNormalizer {
         }
 
         return locations.stream()
-                .map(TextNormalizationSupport :: normalizeWhitespaceAndCase)
+                .map(this::normalizeLocation)
                 .filter(location -> location != null && !location.isBlank())
                 .toList();
+    }
+
+    private String normalizeLocation(String location) {
+        if (location == null) {
+            return null;
+        }
+
+        String normalized =
+                TextNormalizationSupport.normalizeWhitespaceAndCase(location);
+
+        if (normalized.isBlank()) {
+            return normalized;
+        }
+
+        return normalized
+                .replace(",", " ")
+                .replaceAll("\\s+", " ")
+                .trim();
     }
 
     public String normalizeSkill(String skill) {

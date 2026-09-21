@@ -75,8 +75,26 @@ public class JobQualificationService {
                 .map(location ->
                         candidateTextNormalizer
                                 .normalizeLocations(List.of(location))
-                                .getFirst())
-                .anyMatch(preferredLocations::contains);
+                                .getFirst()
+                )
+                .anyMatch(jobLocation ->
+                        preferredLocations.stream()
+                                .anyMatch(preferredLocation ->
+                                        locationsMatch(
+                                                jobLocation,
+                                                preferredLocation
+                                        )
+                                )
+                );
+    }
+
+    private boolean locationsMatch(
+            String jobLocation,
+            String preferredLocation
+    ) {
+        return jobLocation.equals(preferredLocation)
+                || jobLocation.startsWith(preferredLocation + " ")
+                || preferredLocation.startsWith(jobLocation + " ");
     }
 
 

@@ -2,6 +2,7 @@ package com.samyak.job_intelligence.job.service.matching;
 
 import com.samyak.job_intelligence.candidate.domain.CandidateProfile;
 import com.samyak.job_intelligence.candidate.repository.CandidateProfileRepository;
+import com.samyak.job_intelligence.candidate.service.CandidateProfileService;
 import com.samyak.job_intelligence.job.domain.Job;
 import com.samyak.job_intelligence.job.domain.JobLocation;
 import com.samyak.job_intelligence.job.domain.JobMatch;
@@ -23,7 +24,7 @@ class JobMatchEvaluationServiceTest {
 
     private JobService jobService;
     private JobLocationRepository jobLocationRepository;
-    private CandidateProfileRepository candidateProfileRepository;
+    private CandidateProfileService candidateProfileService;
     private JobMatchingService jobMatchingService;
     private JobMatchPersistenceService jobMatchPersistenceService;
 
@@ -34,14 +35,14 @@ class JobMatchEvaluationServiceTest {
 
         jobService = mock(JobService.class);
         jobLocationRepository = mock(JobLocationRepository.class);
-        candidateProfileRepository = mock(CandidateProfileRepository.class);
+        candidateProfileService = mock(CandidateProfileService.class);
         jobMatchingService = mock(JobMatchingService.class);
         jobMatchPersistenceService = mock(JobMatchPersistenceService.class);
 
         service = new JobMatchEvaluationService(
                 jobService,
                 jobLocationRepository,
-                candidateProfileRepository,
+                candidateProfileService,
                 jobMatchingService,
                 jobMatchPersistenceService
         );
@@ -71,8 +72,8 @@ class JobMatchEvaluationServiceTest {
         when(jobService.getById(jobId))
                 .thenReturn(job);
 
-        when(candidateProfileRepository.findById(candidateProfileId))
-                .thenReturn(Optional.of(candidateProfile));
+        when(candidateProfileService.getById(candidateProfileId))
+                .thenReturn(candidateProfile);
 
         when(jobLocationRepository.findByJobId(jobId))
                 .thenReturn(locations);
@@ -103,8 +104,8 @@ class JobMatchEvaluationServiceTest {
         verify(jobService)
                 .getById(jobId);
 
-        verify(candidateProfileRepository)
-                .findById(candidateProfileId);
+        verify(candidateProfileService)
+                .getById(candidateProfileId);
 
         verify(jobLocationRepository)
                 .findByJobId(jobId);

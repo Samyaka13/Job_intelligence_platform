@@ -2,6 +2,7 @@ package com.samyak.job_intelligence.job.service.matching;
 
 import com.samyak.job_intelligence.candidate.domain.CandidateProfile;
 import com.samyak.job_intelligence.candidate.repository.CandidateProfileRepository;
+import com.samyak.job_intelligence.candidate.service.CandidateProfileService;
 import com.samyak.job_intelligence.job.domain.Job;
 import com.samyak.job_intelligence.job.domain.JobLocation;
 import com.samyak.job_intelligence.job.domain.JobMatch;
@@ -18,14 +19,14 @@ import java.util.List;
 public class JobMatchEvaluationService {
     private final JobService jobService;
     private final JobLocationRepository jobLocationRepository;
-    private final CandidateProfileRepository candidateProfileRepository;
+    private final CandidateProfileService candidateProfileService;
     private final JobMatchingService jobMatchingService;
     private final JobMatchPersistenceService jobMatchPersistenceService;
 
-    public JobMatchEvaluationService(JobService jobService, JobLocationRepository jobLocationRepository, CandidateProfileRepository candidateProfileRepository,JobMatchingService jobMatchingService,JobMatchPersistenceService jobMatchPersistenceService) {
+    public JobMatchEvaluationService(JobService jobService, JobLocationRepository jobLocationRepository, CandidateProfileService candidateProfileService,JobMatchingService jobMatchingService,JobMatchPersistenceService jobMatchPersistenceService) {
         this.jobService = jobService;
         this.jobLocationRepository = jobLocationRepository;
-        this.candidateProfileRepository = candidateProfileRepository;
+        this.candidateProfileService = candidateProfileService;
         this.jobMatchingService = jobMatchingService;
         this.jobMatchPersistenceService = jobMatchPersistenceService;
     }
@@ -33,7 +34,7 @@ public class JobMatchEvaluationService {
 
     public JobMatch evaluate(Long jobId,Long candidateProfileId){
         Job job = jobService.getById(jobId);
-        CandidateProfile candidateProfile = candidateProfileRepository.findById(candidateProfileId).orElseThrow(() -> new IllegalArgumentException( "Candidate profile not found: " + candidateProfileId));
+        CandidateProfile candidateProfile = candidateProfileService.getById(candidateProfileId);
         List<JobLocation> jobLocation = jobLocationRepository.findByJobId(jobId);
 
         JobMatchingInput jobMatchingInput = new JobMatchingInput(job,candidateProfile,jobLocation);

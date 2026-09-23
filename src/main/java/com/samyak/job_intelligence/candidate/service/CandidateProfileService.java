@@ -17,6 +17,7 @@ public class CandidateProfileService {
         this.candidateProfileRepository = candidateProfileRepository;
     }
 
+
     @Transactional
     public CandidateProfile create(
             String name,

@@ -7,14 +7,7 @@ import com.samyak.job_intelligence.candidate.repository.CandidateSkillRepository
 import com.samyak.job_intelligence.candidate.service.CandidateProfileService;
 import com.samyak.job_intelligence.company.domain.Company;
 import com.samyak.job_intelligence.company.repository.CompanyRepository;
-import com.samyak.job_intelligence.job.domain.EmploymentType;
-import com.samyak.job_intelligence.job.domain.Job;
-import com.samyak.job_intelligence.job.domain.JobLocation;
-import com.samyak.job_intelligence.job.domain.JobMatch;
-import com.samyak.job_intelligence.job.domain.JobRequirement;
-import com.samyak.job_intelligence.job.domain.RequirementType;
-import com.samyak.job_intelligence.job.domain.RemoteType;
-import com.samyak.job_intelligence.job.domain.SeniorityLevel;
+import com.samyak.job_intelligence.job.domain.*;
 import com.samyak.job_intelligence.job.repository.JobLocationRepository;
 import com.samyak.job_intelligence.job.repository.JobMatchRepository;
 import com.samyak.job_intelligence.job.repository.JobRepository;
@@ -33,6 +26,7 @@ import tools.jackson.databind.node.JsonNodeFactory;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -208,7 +202,9 @@ class CandidateMatchingIT {
                         "java",
                         true,
                         new BigDecimal("1.0"),
-                        "Java experience is required."
+                        "Java experience is required.",
+                        UUID.randomUUID().toString(),
+                        RequirementMatchMode.SINGLE
                 )
         );
 
@@ -220,7 +216,10 @@ class CandidateMatchingIT {
                         "spring",
                         true,
                         new BigDecimal("1.0"),
-                        "Spring experience is required."
+                        "Spring experience is required.",
+                        UUID.randomUUID().toString(),
+                        RequirementMatchMode.SINGLE
+
                 )
         );
 
@@ -273,7 +272,9 @@ class CandidateMatchingIT {
                         "java",
                         true,
                         new BigDecimal("1.0"),
-                        "Java experience is required."
+                        "Java experience is required.",
+                        UUID.randomUUID().toString(),
+                        RequirementMatchMode.SINGLE
                 )
         );
 
@@ -285,7 +286,9 @@ class CandidateMatchingIT {
                         "spring",
                         true,
                         new BigDecimal("1.0"),
-                        "Spring experience is required."
+                        "Spring experience is required.",
+                        UUID.randomUUID().toString(),
+                        RequirementMatchMode.SINGLE
                 )
         );
 

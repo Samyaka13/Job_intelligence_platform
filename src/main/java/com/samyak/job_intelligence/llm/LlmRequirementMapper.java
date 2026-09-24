@@ -5,27 +5,39 @@ import com.samyak.job_intelligence.job.service.requirement.ExtractedJobRequireme
 import com.samyak.job_intelligence.job.service.requirement.LlmExtractedRequirement;
 import org.springframework.stereotype.Component;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.UUID;
 
 @Component
 public class LlmRequirementMapper {
     public List<ExtractedJobRequirement> map(List<LlmExtractedRequirement> llmExtractedRequirements){
         if(llmExtractedRequirements == null ||llmExtractedRequirements.isEmpty()) return List.of();
 
-        return llmExtractedRequirements.stream().map(this::mapSingle).toList();
+        return llmExtractedRequirements.stream().flatMap((requirement) -> mapSingle(requirement).stream()).toList();
     }
 
-    private ExtractedJobRequirement mapSingle(LlmExtractedRequirement llmExtractedRequirement){
+    private List<ExtractedJobRequirement> mapSingle(LlmExtractedRequirement llmExtractedRequirement){
         validate(llmExtractedRequirement);
-        String normalizedValue = TextNormalizationSupport.normalizeWhitespaceAndCase(llmExtractedRequirement.value());
-        return new ExtractedJobRequirement(
-                llmExtractedRequirement.requirementType(),
-                llmExtractedRequirement.value().trim(),
-                normalizedValue,
-                llmExtractedRequirement.mandatory(),
-                llmExtractedRequirement.yearsRequired(),
-                llmExtractedRequirement.requirementText()
-        );
+        String groupId = generateGroupId(llmExtractedRequirement);
+        return llmExtractedRequirement.values()
+                .stream()
+                .map(String ::trim)
+                .filter(value -> !value.isBlank())
+                .map(value -> {
+                    String normalizedValue = TextNormalizationSupport.normalizeWhitespaceAndCase(value);
+                    return new ExtractedJobRequirement(
+                            llmExtractedRequirement.requirementType(),
+                            value,
+                            normalizedValue,
+                            llmExtractedRequirement.mandatory(),
+                            llmExtractedRequirement.yearsRequired(),
+                            llmExtractedRequirement.requirementText(),
+                            groupId,
+                            llmExtractedRequirement.requirementMatchMode()
+                    );
+                })
+                .toList();
     }
 
     private void validate(LlmExtractedRequirement llmExtractedRequirement){
@@ -38,10 +50,17 @@ public class LlmRequirementMapper {
         }
 
 
-        if (llmExtractedRequirement.value() == null ||
-                llmExtractedRequirement.value().isBlank()) {
+        if (llmExtractedRequirement.values() == null ||
+                llmExtractedRequirement.values().isEmpty()) {
             throw new IllegalArgumentException(
-                    "Requirement value cannot be blank"
+                    "Requirement value cannot be empty"
+            );
+        }
+        if (llmExtractedRequirement.values().stream()
+                .anyMatch(value ->
+                        value == null || value.isBlank())) {
+            throw new IllegalArgumentException(
+                    "Requirement values cannot contain blank values"
             );
         }
 
@@ -51,5 +70,25 @@ public class LlmRequirementMapper {
                     "Required years cannot be negative"
             );
         }
+        if (llmExtractedRequirement.requirementMatchMode() == null) {
+            throw new IllegalArgumentException(
+                    "Requirement match mode cannot be null"
+            );
+        }
+    }
+
+    private String generateGroupId(
+            LlmExtractedRequirement requirement
+    ) {
+        String groupInput =
+                requirement.requirementType().name()
+                        + "|"
+                        + requirement.requirementMatchMode().name()
+                        + "|"
+                        + requirement.requirementText();
+
+        return UUID.nameUUIDFromBytes(
+                groupInput.getBytes(StandardCharsets.UTF_8)
+        ).toString();
     }
 }

@@ -6,11 +6,7 @@ import com.samyak.job_intelligence.candidate.repository.CandidateProfileReposito
 import com.samyak.job_intelligence.candidate.repository.CandidateSkillRepository;
 import com.samyak.job_intelligence.company.domain.Company;
 import com.samyak.job_intelligence.company.repository.CompanyRepository;
-import com.samyak.job_intelligence.job.domain.EmploymentType;
-import com.samyak.job_intelligence.job.domain.Job;
-import com.samyak.job_intelligence.job.domain.JobRequirement;
-import com.samyak.job_intelligence.job.domain.RequirementType;
-import com.samyak.job_intelligence.job.domain.SeniorityLevel;
+import com.samyak.job_intelligence.job.domain.*;
 import com.samyak.job_intelligence.job.repository.JobRepository;
 import com.samyak.job_intelligence.job.repository.JobRequirementRepository;
 import org.junit.jupiter.api.Test;
@@ -28,6 +24,7 @@ import org.testcontainers.utility.TestcontainersConfiguration;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -121,8 +118,11 @@ class SkillMatchingServiceIT {
                         "java",
                         true,
                         null,
-                        "Experience with Java"
-                )
+                        "Experience with Java",
+                        UUID.randomUUID().toString(),
+                        RequirementMatchMode.SINGLE
+
+                        )
         );
 
         jobRequirementRepository.save(
@@ -133,8 +133,10 @@ class SkillMatchingServiceIT {
                         "spring boot",
                         true,
                         null,
-                        "Experience with Spring Boot"
-                )
+                        "Experience with Spring Boot",
+                        UUID.randomUUID().toString(),
+                        RequirementMatchMode.SINGLE
+                        )
         );
 
         jobRequirementRepository.save(
@@ -145,8 +147,10 @@ class SkillMatchingServiceIT {
                         "kafka",
                         false,
                         null,
-                        "Knowledge of Kafka"
-                )
+                        "Knowledge of Kafka",
+                        UUID.randomUUID().toString(),
+                        RequirementMatchMode.SINGLE
+                        )
         );
 
         // -------------------------------------------------

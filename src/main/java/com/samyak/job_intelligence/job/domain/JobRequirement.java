@@ -13,7 +13,8 @@ import java.math.BigDecimal;
         @Index(name = "idx_job_requirements_job_id",columnList = "job_id"),
         @Index(name = "idx_job_requirements_type",columnList = "requirement_type"),
         @Index(name = "idx_job_requirements_normalized_value",columnList = "normalized_value"),
-        @Index(name = "idx_job_requirements_mandatory",columnList = "is_mandatory")
+        @Index(name = "idx_job_requirements_mandatory",columnList = "is_mandatory"),
+        @Index(name = "idx_job_requirements_group_id",columnList = "group_id")
 })
 public class JobRequirement extends AuditableEntity {
 
@@ -44,11 +45,18 @@ public class JobRequirement extends AuditableEntity {
     @Column(name = "requirement_text")
     private String requirementText;
 
+    @Column(name = "group_id",length = 100)
+    private String groupId;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "match_mode", length = 20, nullable = false)
+    private RequirementMatchMode requirementMatchMode;
+
     protected JobRequirement(){
         //required by JPA
     }
 
-    public JobRequirement(Job job, RequirementType requirementType, String value, String normalizedValue, boolean mandatory, BigDecimal yearsRequired, String requirementText) {
+    public JobRequirement(Job job, RequirementType requirementType, String value, String normalizedValue, boolean mandatory, BigDecimal yearsRequired, String requirementText,String groupId,RequirementMatchMode requirementMatchMode) {
         this.job = job;
         this.requirementType = requirementType;
         this.value = value;
@@ -56,5 +64,7 @@ public class JobRequirement extends AuditableEntity {
         this.mandatory = mandatory;
         this.yearsRequired = yearsRequired;
         this.requirementText = requirementText;
+        this.groupId = groupId;
+        this.requirementMatchMode= requirementMatchMode;
     }
 }

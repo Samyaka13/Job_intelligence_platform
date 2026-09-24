@@ -2,11 +2,7 @@ package com.samyak.job_intelligence.job.service.ingestion;
 
 import com.samyak.job_intelligence.company.domain.Company;
 import com.samyak.job_intelligence.company.repository.CompanyRepository;
-import com.samyak.job_intelligence.job.domain.EmploymentType;
-import com.samyak.job_intelligence.job.domain.Job;
-import com.samyak.job_intelligence.job.domain.JobRequirement;
-import com.samyak.job_intelligence.job.domain.RequirementType;
-import com.samyak.job_intelligence.job.domain.SeniorityLevel;
+import com.samyak.job_intelligence.job.domain.*;
 import com.samyak.job_intelligence.job.repository.JobRepository;
 import com.samyak.job_intelligence.job.repository.JobRequirementRepository;
 import com.samyak.job_intelligence.job.service.JobLocationService;
@@ -31,6 +27,7 @@ import org.testcontainers.postgresql.PostgreSQLContainer;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -135,8 +132,10 @@ class JobIngestionItemServiceIT {
                         "java",
                         true,
                         null,
-                        "Java experience is required."
-                );
+                        "Java experience is required.",
+                        UUID.randomUUID().toString(),
+                        RequirementMatchMode.SINGLE
+                        );
 
         when(
                 jobNormalizer.normalize(
@@ -250,7 +249,9 @@ class JobIngestionItemServiceIT {
                                 "java",
                                 true,
                                 null,
-                                "Java experience is required."
+                                "Java experience is required.",
+                                UUID.randomUUID().toString(),
+                                RequirementMatchMode.SINGLE
                         )
                 );
 
@@ -473,7 +474,9 @@ class JobIngestionItemServiceIT {
                         "java",
                         true,
                         null,
-                        "Java experience is required."
+                        "Java experience is required.",
+                        UUID.randomUUID().toString(),
+                        RequirementMatchMode.SINGLE
                 )
         );
 
@@ -497,7 +500,9 @@ class JobIngestionItemServiceIT {
                         "spring boot",
                         true,
                         null,
-                        "Spring Boot experience is required."
+                        "Spring Boot experience is required.",
+                        UUID.randomUUID().toString(),
+                        RequirementMatchMode.SINGLE
                 );
 
         when(

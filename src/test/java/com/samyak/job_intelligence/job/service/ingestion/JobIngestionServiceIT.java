@@ -31,6 +31,7 @@ import tools.jackson.databind.node.JsonNodeFactory;
 
 import java.time.Instant;
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -138,16 +139,20 @@ class JobIngestionServiceIT {
                                 "java",
                                 true,
                                 null,
-                                "Strong Java experience is required."
-                        ),
+                                "Strong Java experience is required.",
+                                UUID.randomUUID().toString(),
+                                RequirementMatchMode.SINGLE
+                                ),
                         new ExtractedJobRequirement(
                                 RequirementType.TECHNOLOGY,
                                 "Kafka",
                                 "kafka",
                                 false,
                                 null,
-                                "Experience with Kafka is a plus."
-                        )
+                                "Experience with Kafka is a plus.",
+                                UUID.randomUUID().toString(),
+                                RequirementMatchMode.SINGLE
+                                )
                 );
 
         when(collector.getSource())
@@ -428,16 +433,20 @@ class JobIngestionServiceIT {
                                 "java",
                                 true,
                                 null,
-                                "Strong Java experience is required."
-                        ),
+                                "Strong Java experience is required.",
+                                UUID.randomUUID().toString(),
+                                RequirementMatchMode.SINGLE
+                                ),
                         new ExtractedJobRequirement(
                                 RequirementType.TECHNOLOGY,
                                 "Kafka",
                                 "kafka",
                                 false,
                                 null,
-                                "Experience with Kafka is a plus."
-                        )
+                                "Experience with Kafka is a plus.",
+                                UUID.randomUUID().toString(),
+                                RequirementMatchMode.SINGLE
+                                )
                 );
 
         List<ExtractedJobRequirement> secondRequirements =
@@ -448,16 +457,20 @@ class JobIngestionServiceIT {
                                 "java",
                                 true,
                                 null,
-                                "Strong Java experience is required."
-                        ),
+                                "Strong Java experience is required.",
+                                UUID.randomUUID().toString(),
+                                RequirementMatchMode.SINGLE
+                                ),
                         new ExtractedJobRequirement(
                                 RequirementType.TECHNOLOGY,
                                 "Docker",
                                 "docker",
                                 false,
                                 null,
-                                "Experience with Docker is a plus."
-                        )
+                                "Experience with Docker is a plus.",
+                                UUID.randomUUID().toString(),
+                                RequirementMatchMode.SINGLE
+                                )
                 );
 
         when(collector.getSource())

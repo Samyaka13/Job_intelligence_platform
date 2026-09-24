@@ -1,11 +1,13 @@
 package com.samyak.job_intelligence.job.service.requirement;
 
 import com.samyak.job_intelligence.common.normalization.TextNormalizationSupport;
+import com.samyak.job_intelligence.job.domain.RequirementMatchMode;
 import com.samyak.job_intelligence.job.domain.RequirementType;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -103,7 +105,9 @@ public class RuleBasedRequirementExtractor implements RequirementExtractor{
                     normalizedValue,
                     true,
                     null,
-                    sentence.trim()
+                    sentence.trim(),
+                    UUID.randomUUID().toString(),
+                    RequirementMatchMode.SINGLE
                     ));
         }
 
@@ -139,8 +143,10 @@ public class RuleBasedRequirementExtractor implements RequirementExtractor{
                     normalizedValue,
                     false,
                     null,
-                    sentence.trim()
-                    ));
+                    sentence.trim(),
+                    UUID.randomUUID().toString(),
+                    RequirementMatchMode.SINGLE
+            ));
         }
 
     }

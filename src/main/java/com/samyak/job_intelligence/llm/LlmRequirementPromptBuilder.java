@@ -22,6 +22,11 @@ public class LlmRequirementPromptBuilder {
                 - CERTIFICATION
                 - OTHER
 
+                Match modes allowed:
+                - SINGLE
+                - ANY_OF
+                - ALL_OF
+
                 Rules:
 
                 1. Extract actual candidate requirements, not technologies or concepts
@@ -48,22 +53,61 @@ public class LlmRequirementPromptBuilder {
                 8. requirementText must contain the smallest useful piece of source
                    text that supports the extracted requirement.
 
-                9. Return the requirement value as it appears naturally in the
-                   source text. Normalization will be handled by the application.
+                9. Extract atomic candidate requirements into the values array.
+                   Do not put an entire sentence, paragraph, list item, or
+                   multi-action phrase into a single value.
 
-                10. If no actual candidate requirements can be identified, return
+                10. Use matchMode=SINGLE when the requirement contains one
+                    independent value.
+
+                11. Use matchMode=ANY_OF when satisfying any one of the values
+                    is sufficient.
+
+                    Example:
+                    "Java, Python, Go, or Ruby"
+
+                    values:
+                    ["Java", "Python", "Go", "Ruby"]
+
+                    matchMode:
+                    "ANY_OF"
+
+                12. Use matchMode=ALL_OF when all listed values are required.
+
+                    Example:
+                    "Java and Spring Boot"
+
+                    values:
+                    ["Java", "Spring Boot"]
+
+                    matchMode:
+                    "ALL_OF"
+
+                13. Do not combine alternatives into a single value.
+
+                    WRONG:
+                    "Java, Python, or Go"
+
+                    CORRECT:
+                    ["Java", "Python", "Go"]
+
+                14. Do not extract general job-level experience requirements when
+                    they are already expressed as overall years of experience for
+                    the role. Overall experience is handled separately by the
+                    application's deterministic experience parser.
+
+                15. Only populate requirementType=EXPERIENCE when the experience
+                    itself is a distinct candidate requirement that needs semantic
+                    interpretation.
+
+                16. Only populate yearsRequired when a number of years is explicitly
+                    tied to the extracted requirement.
+
+                17. Return the requirement value as it appears naturally in the
+                    source text. Normalization will be handled by the application.
+
+                18. If no actual candidate requirements can be identified, return
                     an empty requirements array.
-                
-                11. Do not extract general job-level experience requirements when they are
-                    already expressed as overall years of experience for the role. Overall
-                    experience is handled separately by the application's deterministic
-                    experience parser.
-                
-                12. Only populate requirementType=EXPERIENCE when the experience itself is
-                    a distinct candidate requirement that needs semantic interpretation.
-                
-                13. Only populate yearsRequired when a number of years is explicitly tied
-                    to the extracted requirement.
                 """;
     }
 
@@ -77,10 +121,11 @@ public class LlmRequirementPromptBuilder {
                   "requirements": [
                     {
                       "requirementType": "TECHNOLOGY",
-                      "value": "Java",
+                      "values": ["Java"],
                       "mandatory": true,
                       "yearsRequired": null,
-                      "requirementText": "Strong Java experience is required."
+                      "requirementText": "Strong Java experience is required.",
+                      "matchMode": "SINGLE"
                     }
                   ]
                 }

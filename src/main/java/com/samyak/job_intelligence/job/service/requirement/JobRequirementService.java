@@ -35,7 +35,9 @@ public class JobRequirementService {
                         requirement.normalizedValue(),
                         requirement.mandatory(),
                         requirement.yearsRequired(),
-                        requirement.requirementText()
+                        requirement.requirementText(),
+                        requirement.groupId(),
+                        requirement.requirementMatchMode()
 
                 )).toList();
         System.out.println("Requirements job ID = " + job.getId());

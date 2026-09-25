@@ -5,6 +5,7 @@ import com.samyak.job_intelligence.company.repository.CompanyRepository;
 import com.samyak.job_intelligence.job.domain.EmploymentType;
 import com.samyak.job_intelligence.job.domain.Job;
 import com.samyak.job_intelligence.job.domain.JobRequirement;
+import com.samyak.job_intelligence.job.domain.RequirementMatchMode;
 import com.samyak.job_intelligence.job.domain.RequirementType;
 import com.samyak.job_intelligence.job.domain.SeniorityLevel;
 
@@ -45,6 +46,7 @@ class JobRequirementRepositoryIT {
         registry.add("spring.datasource.username", postgres::getUsername);
         registry.add("spring.datasource.password", postgres::getPassword);
     }
+
     @Autowired
     private CompanyRepository companyRepository;
 
@@ -94,7 +96,9 @@ class JobRequirementRepositoryIT {
                         "java",
                         true,
                         null,
-                        "Experience with Java"
+                        "Experience with Java",
+                        "technology-java",
+                        RequirementMatchMode.SINGLE
                 )
         );
 
@@ -106,7 +110,9 @@ class JobRequirementRepositoryIT {
                         "spring boot",
                         true,
                         null,
-                        "Experience with Spring Boot"
+                        "Experience with Spring Boot",
+                        "technology-spring-boot",
+                        RequirementMatchMode.SINGLE
                 )
         );
 
@@ -118,7 +124,9 @@ class JobRequirementRepositoryIT {
                         "bachelor's degree",
                         false,
                         null,
-                        "Bachelor's degree preferred"
+                        "Bachelor's degree preferred",
+                        "education-bachelors",
+                        RequirementMatchMode.SINGLE
                 )
         );
 
@@ -168,7 +176,9 @@ class JobRequirementRepositoryIT {
                         "java",
                         true,
                         null,
-                        "Experience with Java"
+                        "Experience with Java",
+                        "technology-java",
+                        RequirementMatchMode.SINGLE
                 )
         );
 
@@ -180,7 +190,9 @@ class JobRequirementRepositoryIT {
                         "kafka",
                         false,
                         null,
-                        "Knowledge of Kafka"
+                        "Knowledge of Kafka",
+                        "technology-kafka",
+                        RequirementMatchMode.SINGLE
                 )
         );
 
@@ -192,7 +204,9 @@ class JobRequirementRepositoryIT {
                         "bachelor's degree",
                         false,
                         null,
-                        "Bachelor's degree preferred"
+                        "Bachelor's degree preferred",
+                        "education-bachelors",
+                        RequirementMatchMode.SINGLE
                 )
         );
 

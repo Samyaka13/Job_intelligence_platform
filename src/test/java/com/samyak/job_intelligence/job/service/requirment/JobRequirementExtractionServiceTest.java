@@ -1,6 +1,7 @@
 package com.samyak.job_intelligence.job.service.requirment;
 
 
+import com.samyak.job_intelligence.job.domain.RequirementMatchMode;
 import com.samyak.job_intelligence.job.domain.RequirementType;
 import com.samyak.job_intelligence.job.service.requirement.*;
 import com.samyak.job_intelligence.llm.LlmClient;
@@ -12,6 +13,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 import java.util.List;
+import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
@@ -46,7 +48,9 @@ class JobRequirementExtractionServiceTest {
                         "kafka",
                         true,
                         null,
-                        "Kafka is a plus."
+                        "Kafka is a plus.",
+                        UUID.randomUUID().toString(),
+                        RequirementMatchMode.SINGLE
                 );
 
         ExtractedJobRequirement llmKafka =
@@ -56,7 +60,9 @@ class JobRequirementExtractionServiceTest {
                         "kafka",
                         false,
                         null,
-                        "Kafka is a plus."
+                        "Kafka is a plus.",
+                        UUID.randomUUID().toString(),
+                        RequirementMatchMode.SINGLE
                 );
 
         when(ruleExtractor.extract(description))
@@ -100,7 +106,9 @@ class JobRequirementExtractionServiceTest {
                         "java",
                         true,
                         null,
-                        "Must have Java."
+                        "Must have Java.",
+                        UUID.randomUUID().toString(),
+                        RequirementMatchMode.SINGLE
                 );
 
         ExtractedJobRequirement springRequirement =
@@ -110,7 +118,9 @@ class JobRequirementExtractionServiceTest {
                         "spring boot",
                         true,
                         null,
-                        "Must have Spring Boot."
+                        "Must have Spring Boot.",
+                        UUID.randomUUID().toString(),
+                        RequirementMatchMode.SINGLE
                 );
 
         when(ruleExtractor.extract(description))
@@ -151,7 +161,9 @@ class JobRequirementExtractionServiceTest {
                         "java",
                         true,
                         null,
-                        "Java required."
+                        "Java required.",
+                        UUID.randomUUID().toString(),
+                        RequirementMatchMode.SINGLE
                 );
 
         ExtractedJobRequirement llmResult =
@@ -161,7 +173,9 @@ class JobRequirementExtractionServiceTest {
                         "java",
                         false,
                         null,
-                        "Java preferred."
+                        "Java preferred.",
+                        UUID.randomUUID().toString(),
+                        RequirementMatchMode.SINGLE
                 );
 
         when(ruleExtractor.extract(anyString()))

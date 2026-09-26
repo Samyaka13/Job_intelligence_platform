@@ -2,15 +2,14 @@ package com.samyak.job_intelligence.job.service.requirment;
 
 import com.samyak.job_intelligence.job.domain.Job;
 import com.samyak.job_intelligence.job.domain.JobRequirement;
+import com.samyak.job_intelligence.job.domain.RequirementMatchMode;
 import com.samyak.job_intelligence.job.domain.RequirementType;
 import com.samyak.job_intelligence.job.repository.JobRequirementRepository;
-
 import com.samyak.job_intelligence.job.service.JobService;
 import com.samyak.job_intelligence.job.service.requirement.ExtractedJobRequirement;
 import com.samyak.job_intelligence.job.service.requirement.JobRequirementService;
 import org.junit.jupiter.api.Test;
 
-import java.math.BigDecimal;
 import java.util.List;
 import java.util.stream.StreamSupport;
 
@@ -45,7 +44,9 @@ class JobRequirementServiceTest {
                         "java",
                         true,
                         null,
-                        "Java is required."
+                        "Java is required.",
+                        "java-group",
+                        RequirementMatchMode.SINGLE
                 );
 
         ExtractedJobRequirement newKafka =
@@ -55,7 +56,9 @@ class JobRequirementServiceTest {
                         "kafka",
                         false,
                         null,
-                        "Kafka is a plus."
+                        "Kafka is a plus.",
+                        "kafka-group",
+                        RequirementMatchMode.SINGLE
                 );
 
         Job job = mock(Job.class);
@@ -82,31 +85,52 @@ class JobRequirementServiceTest {
         // Verify two new requirements were saved
         verify(jobRequirementRepository)
                 .saveAll(argThat(requirements ->
-                        StreamSupport.stream(requirements.spliterator(), false)
+                        StreamSupport
+                                .stream(requirements.spliterator(), false)
                                 .count() == 2
                 ));
+
         // Verify returned result contains two requirements
         assertThat(result)
                 .hasSize(2);
 
-        // Verify the newly-created requirements contain the expected data
+        // Java
         assertThat(result.getFirst().getRequirementType())
                 .isEqualTo(RequirementType.TECHNOLOGY);
 
-        assertThat(result.get(0).getValue())
+        assertThat(result.getFirst().getValue())
                 .isEqualTo("Java");
 
-        assertThat(result.get(0).isMandatory())
+        assertThat(result.getFirst().getNormalizedValue())
+                .isEqualTo("java");
+
+        assertThat(result.getFirst().isMandatory())
                 .isTrue();
 
+        assertThat(result.getFirst().getGroupId())
+                .isEqualTo("java-group");
+
+        assertThat(result.getFirst().getRequirementMatchMode())
+                .isEqualTo(RequirementMatchMode.SINGLE);
+
+        // Kafka
         assertThat(result.get(1).getRequirementType())
                 .isEqualTo(RequirementType.TECHNOLOGY);
 
         assertThat(result.get(1).getValue())
                 .isEqualTo("Kafka");
 
+        assertThat(result.get(1).getNormalizedValue())
+                .isEqualTo("kafka");
+
         assertThat(result.get(1).isMandatory())
                 .isFalse();
+
+        assertThat(result.get(1).getGroupId())
+                .isEqualTo("kafka-group");
+
+        assertThat(result.get(1).getRequirementMatchMode())
+                .isEqualTo(RequirementMatchMode.SINGLE);
     }
 
     @Test

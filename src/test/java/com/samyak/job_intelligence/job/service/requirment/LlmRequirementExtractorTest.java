@@ -1,9 +1,15 @@
 package com.samyak.job_intelligence.job.service.requirment;
 
+import com.samyak.job_intelligence.job.domain.RequirementMatchMode;
 import com.samyak.job_intelligence.job.domain.RequirementType;
-import com.samyak.job_intelligence.job.service.requirement.*;
-import com.samyak.job_intelligence.llm.*;
-import org.junit.jupiter.api.Tag;
+import com.samyak.job_intelligence.job.service.requirement.ExtractedJobRequirement;
+import com.samyak.job_intelligence.job.service.requirement.LlmExtractedRequirement;
+import com.samyak.job_intelligence.llm.JobDescriptionCleaner;
+import com.samyak.job_intelligence.llm.LlmClient;
+import com.samyak.job_intelligence.llm.LlmRequirementExtractionResponse;
+import com.samyak.job_intelligence.llm.LlmRequirementMapper;
+import com.samyak.job_intelligence.llm.LlmRequirementPromptBuilder;
+import com.samyak.job_intelligence.llm.LlmRequirementExtractor;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -14,7 +20,6 @@ import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
-
 
 @ExtendWith(MockitoExtension.class)
 class LlmRequirementExtractorTest {
@@ -31,16 +36,14 @@ class LlmRequirementExtractorTest {
     @Mock
     private ObjectMapper objectMapper;
 
-    @Mock
-    private JobDescriptionCleaner jobDescriptionCleaner;
-
     @Test
     void shouldExtractRequirementsFromLlmResponse() throws Exception {
 
         String jobDescription =
                 "Strong Java experience is required. Kafka is a plus.";
 
-        String cleanedUpDescription = "Strong Java experience is required. Kafka is a plus.";
+        String cleanedUpDescription =
+                JobDescriptionCleaner.clean(jobDescription);
 
         String systemPrompt =
                 "system prompt";
@@ -54,17 +57,19 @@ class LlmRequirementExtractorTest {
                   "requirements": [
                     {
                       "requirementType": "TECHNOLOGY",
-                      "value": "Java",
+                      "values": ["Java"],
                       "mandatory": true,
                       "yearsRequired": null,
-                      "requirementText": "Strong Java experience is required."
+                      "requirementText": "Strong Java experience is required.",
+                      "matchMode": "SINGLE"
                     },
                     {
                       "requirementType": "TECHNOLOGY",
-                      "value": "Kafka",
+                      "values": ["Kafka"],
                       "mandatory": false,
                       "yearsRequired": null,
-                      "requirementText": "Kafka is a plus."
+                      "requirementText": "Kafka is a plus.",
+                      "matchMode": "SINGLE"
                     }
                   ]
                 }
@@ -75,17 +80,19 @@ class LlmRequirementExtractorTest {
                         List.of(
                                 new LlmExtractedRequirement(
                                         RequirementType.TECHNOLOGY,
-                                        "Java",
+                                        List.of("Java"),
                                         true,
                                         null,
-                                        "Strong Java experience is required."
+                                        "Strong Java experience is required.",
+                                        RequirementMatchMode.SINGLE
                                 ),
                                 new LlmExtractedRequirement(
                                         RequirementType.TECHNOLOGY,
-                                        "Kafka",
+                                        List.of("Kafka"),
                                         false,
                                         null,
-                                        "Kafka is a plus."
+                                        "Kafka is a plus.",
+                                        RequirementMatchMode.SINGLE
                                 )
                         )
                 );
@@ -98,7 +105,9 @@ class LlmRequirementExtractorTest {
                                 "java",
                                 true,
                                 null,
-                                "Strong Java experience is required."
+                                "Strong Java experience is required.",
+                                "group-java",
+                                RequirementMatchMode.SINGLE
                         ),
                         new ExtractedJobRequirement(
                                 RequirementType.TECHNOLOGY,
@@ -106,7 +115,9 @@ class LlmRequirementExtractorTest {
                                 "kafka",
                                 false,
                                 null,
-                                "Kafka is a plus."
+                                "Kafka is a plus.",
+                                "group-kafka",
+                                RequirementMatchMode.SINGLE
                         )
                 );
 
@@ -128,15 +139,12 @@ class LlmRequirementExtractorTest {
                 extractionResponse.requirements()
         )).thenReturn(mappedRequirements);
 
-        when(jobDescriptionCleaner.clean(jobDescription)).thenReturn(cleanedUpDescription);
-
         LlmRequirementExtractor extractor =
                 new LlmRequirementExtractor(
                         llmClient,
                         promptBuilder,
                         requirementMapper,
                         objectMapper
-
                 );
 
         List<ExtractedJobRequirement> result =
@@ -148,8 +156,14 @@ class LlmRequirementExtractorTest {
         assertThat(result.getFirst().value())
                 .isEqualTo("Java");
 
+        assertThat(result.getFirst().normalizedValue())
+                .isEqualTo("java");
+
         assertThat(result.getFirst().mandatory())
                 .isTrue();
+
+        assertThat(result.getFirst().requirementMatchMode())
+                .isEqualTo(RequirementMatchMode.SINGLE);
 
         assertThat(result.get(1).value())
                 .isEqualTo("Kafka");
@@ -157,16 +171,26 @@ class LlmRequirementExtractorTest {
         assertThat(result.get(1).mandatory())
                 .isFalse();
 
+        assertThat(result.get(1).requirementMatchMode())
+                .isEqualTo(RequirementMatchMode.SINGLE);
 
-        verify(jobDescriptionCleaner)
-                .clean(jobDescription);
+        verify(promptBuilder)
+                .systemPrompt();
+
+        verify(promptBuilder)
+                .userPrompt(cleanedUpDescription);
 
         verify(llmClient)
                 .generate(systemPrompt, userPrompt);
 
+        verify(objectMapper)
+                .readValue(
+                        llmResponse,
+                        LlmRequirementExtractionResponse.class
+                );
+
         verify(requirementMapper)
                 .map(extractionResponse.requirements());
-
     }
 
     @Test
@@ -199,7 +223,7 @@ class LlmRequirementExtractorTest {
                 "Java experience is required.";
 
         String cleanedUpDescription =
-                "Java experience is required.";
+                JobDescriptionCleaner.clean(jobDescription);
 
         when(promptBuilder.systemPrompt())
                 .thenReturn("system");
@@ -216,7 +240,6 @@ class LlmRequirementExtractorTest {
         )).thenThrow(
                 new IllegalArgumentException("invalid json")
         );
-        when(jobDescriptionCleaner.clean(jobDescription)).thenReturn(cleanedUpDescription);
 
         LlmRequirementExtractor extractor =
                 new LlmRequirementExtractor(
@@ -235,5 +258,16 @@ class LlmRequirementExtractorTest {
                 .hasMessage(
                         "Failed to parse LLM requirement extraction response"
                 );
+
+        verify(llmClient)
+                .generate("system", "user");
+
+        verify(objectMapper)
+                .readValue(
+                        "not valid json",
+                        LlmRequirementExtractionResponse.class
+                );
+
+        verifyNoInteractions(requirementMapper);
     }
 }

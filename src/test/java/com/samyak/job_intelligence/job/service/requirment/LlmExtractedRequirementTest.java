@@ -1,12 +1,12 @@
 package com.samyak.job_intelligence.job.service.requirment;
 
-
-
+import com.samyak.job_intelligence.job.domain.RequirementMatchMode;
 import com.samyak.job_intelligence.job.domain.RequirementType;
 import com.samyak.job_intelligence.job.service.requirement.LlmExtractedRequirement;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -18,17 +18,18 @@ class LlmExtractedRequirementTest {
         LlmExtractedRequirement requirement =
                 new LlmExtractedRequirement(
                         RequirementType.TECHNOLOGY,
-                        "Java",
+                        List.of("Java"),
                         true,
                         BigDecimal.valueOf(3),
-                        "3 years of Java experience required."
+                        "3 years of Java experience required.",
+                        RequirementMatchMode.SINGLE
                 );
 
         assertThat(requirement.requirementType())
                 .isEqualTo(RequirementType.TECHNOLOGY);
 
-        assertThat(requirement.value())
-                .isEqualTo("Java");
+        assertThat(requirement.values())
+                .containsExactly("Java");
 
         assertThat(requirement.mandatory())
                 .isTrue();
@@ -38,5 +39,8 @@ class LlmExtractedRequirementTest {
 
         assertThat(requirement.requirementText())
                 .isEqualTo("3 years of Java experience required.");
+
+        assertThat(requirement.requirementMatchMode())
+                .isEqualTo(RequirementMatchMode.SINGLE);
     }
 }

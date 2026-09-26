@@ -8,6 +8,8 @@ public record SkillMatchResult(
         List<String> mandatorySkills,
         List<String> missingMandatorySkills,
         int totalRequirements,
-        int mandatoryRequirements
+        int mandatoryRequirements,
+        int matchedRequirements,
+        int matchedMandatoryRequirements
 ) {
 }

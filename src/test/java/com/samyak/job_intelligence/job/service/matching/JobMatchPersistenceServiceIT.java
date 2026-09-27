@@ -121,7 +121,9 @@ class JobMatchPersistenceServiceIT {
                                 List.of("java", "spring boot"),
                                 List.of("spring boot"),
                                 3,
-                                2
+                                2,
+                                1,
+                                1
                         ),
                         new JobOverallScore(new BigDecimal("85.00"))
                 );
@@ -242,7 +244,9 @@ class JobMatchPersistenceServiceIT {
                                 List.of("java", "docker"),
                                 List.of("docker"),
                                 2,
-                                1
+                                1,
+                                1,
+                                0
                         ),
                         new JobOverallScore(new BigDecimal("70.00"))
                 );
@@ -283,6 +287,8 @@ class JobMatchPersistenceServiceIT {
                                 List.of(),
                                 List.of("java", "docker"),
                                 List.of(),
+                                2,
+                                2,
                                 2,
                                 2
                         ),

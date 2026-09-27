@@ -63,6 +63,8 @@ class JobMatchingServiceTest {
                 List.of("java", "spring boot"),
                 List.of(),
                 3,
+                2,
+                2,
                 2
         );
 
@@ -167,6 +169,8 @@ class JobMatchingServiceTest {
                 List.of(),
                 List.of(),
                 List.of(),
+                0,
+                0,
                 0,
                 0
         );

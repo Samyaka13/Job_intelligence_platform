@@ -1,6 +1,8 @@
 package com.samyak.job_intelligence.llm;
 
 import com.samyak.job_intelligence.job.service.requirement.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.ObjectMapper;
 
@@ -34,8 +36,9 @@ public class LlmRequirementExtractor implements RequirementExtractor {
         String userPrompt = llmRequirementPromptBuilder.userPrompt(cleanedDesc);
 
         String response = llmClient.generate(systemPrompt,userPrompt);
-
-
+         final Logger log =
+                LoggerFactory.getLogger(LlmRequirementExtractor.class);
+        log.info("LLM requirement extraction response: {}", response);
         try {
             LlmRequirementExtractionResponse extractionResponse = objectMapper.
                     readValue(response,LlmRequirementExtractionResponse.class);

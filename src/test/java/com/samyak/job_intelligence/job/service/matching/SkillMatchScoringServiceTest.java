@@ -17,10 +17,12 @@ class SkillMatchScoringServiceTest {
     void shouldCalculatePerfectSkillMatch() {
 
         SkillMatchResult result = new SkillMatchResult(
-                List.of("java", "spring boot", "kafka"), // matchedSkill
-                List.of(),                                // missingSkill
-                List.of("java", "spring boot"),           // mandatorySkills
-                List.of(),                                // missingMandatorySkills
+                List.of("java", "spring boot", "kafka"),
+                List.of(),
+                List.of("java", "spring boot"),
+                List.of(),
+                3,
+                2,
                 3,
                 2
         );
@@ -49,11 +51,13 @@ class SkillMatchScoringServiceTest {
     void shouldCalculatePartialSkillMatch() {
 
         SkillMatchResult result = new SkillMatchResult(
-                List.of("java", "spring boot"), // matchedSkill
-                List.of("kafka", "aws"),        // missingSkill
-                List.of("java", "spring boot"), // mandatorySkills
-                List.of(),                      // missingMandatorySkills
+                List.of("java", "spring boot"),
+                List.of("kafka", "aws"),
+                List.of("java", "spring boot"),
+                List.of(),
                 4,
+                2,
+                2,
                 2
         );
 
@@ -81,12 +85,14 @@ class SkillMatchScoringServiceTest {
     void shouldCalculatePartialMandatoryMatch() {
 
         SkillMatchResult result = new SkillMatchResult(
-                List.of("java"),              // matchedSkill
-                List.of("spring boot", "kafka"), // missingSkill
-                List.of("java", "spring boot"),  // mandatorySkills
-                List.of("spring boot"),           // missingMandatorySkills
+                List.of("java"),
+                List.of("spring boot", "kafka"),
+                List.of("java", "spring boot"),
+                List.of("spring boot"),
                 3,
-                2
+                2,
+                1,
+                1
         );
 
         SkillMatchScore score = service.calculate(result);
@@ -113,11 +119,13 @@ class SkillMatchScoringServiceTest {
     void shouldReturnZeroMandatoryRatioWhenThereAreNoMandatoryRequirements() {
 
         SkillMatchResult result = new SkillMatchResult(
-                List.of("java"),       // matchedSkill
-                List.of("kafka"),      // missingSkill
-                List.of(),             // mandatorySkills
-                List.of(),             // missingMandatorySkills
+                List.of("java"),
+                List.of("kafka"),
+                List.of(),
+                List.of(),
                 2,
+                0,
+                1,
                 0
         );
 
@@ -150,6 +158,8 @@ class SkillMatchScoringServiceTest {
                 List.of(),
                 List.of(),
                 0,
+                0,
+                0,
                 0
         );
 
@@ -177,12 +187,14 @@ class SkillMatchScoringServiceTest {
     void shouldMarkScoreWhenMandatorySkillIsMissing() {
 
         SkillMatchResult result = new SkillMatchResult(
-                List.of("java", "kafka"), // matchedSkill
-                List.of("spring boot"),   // missingSkill
-                List.of("java", "spring boot"), // mandatorySkills
-                List.of("spring boot"),        // missingMandatorySkills
+                List.of("java", "kafka"),
+                List.of("spring boot"),
+                List.of("java", "spring boot"),
+                List.of("spring boot"),
                 3,
-                2
+                2,
+                2,
+                1
         );
 
         SkillMatchScore score = service.calculate(result);
@@ -204,11 +216,13 @@ class SkillMatchScoringServiceTest {
     void shouldCalculateWeightedSkillScore() {
 
         SkillMatchResult matchResult = new SkillMatchResult(
-                List.of("java", "spring boot"), // matchedSkill
-                List.of("kafka"),               // missingSkill
-                List.of("java", "spring boot"), // mandatorySkills
-                List.of(),                      // missingMandatorySkills
+                List.of("java", "spring boot"),
+                List.of("kafka"),
+                List.of("java", "spring boot"),
+                List.of(),
                 3,
+                2,
+                2,
                 2
         );
 

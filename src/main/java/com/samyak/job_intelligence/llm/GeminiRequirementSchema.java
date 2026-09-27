@@ -30,9 +30,14 @@ public class GeminiRequirementSchema {
                                                 )
                                                 .build(),
 
-                                        "value",
+                                        "values",
                                         Schema.builder()
-                                                .type(Type.Known.STRING)
+                                                .type(Type.Known.ARRAY)
+                                                .items(
+                                                        Schema.builder()
+                                                                .type(Type.Known.STRING)
+                                                                .build()
+                                                )
                                                 .build(),
 
                                         "mandatory",
@@ -49,15 +54,27 @@ public class GeminiRequirementSchema {
                                         "requirementText",
                                         Schema.builder()
                                                 .type(Type.Known.STRING)
+                                                .build(),
+
+                                        "requirementMatchMode",
+                                        Schema.builder()
+                                                .type(Type.Known.STRING)
+                                                .format("enum")
+                                                .enum_(
+                                                        "SINGLE",
+                                                        "ANY_OF",
+                                                        "ALL_OF"
+                                                )
                                                 .build()
                                 )
                         )
                         .required(
                                 "requirementType",
-                                "value",
+                                "values",
                                 "mandatory",
                                 "yearsRequired",
-                                "requirementText"
+                                "requirementText",
+                                "requirementMatchMode"
                         )
                         .build();
 
@@ -65,13 +82,14 @@ public class GeminiRequirementSchema {
                 .type(Type.Known.OBJECT)
                 .properties(
                         Map.of(
-                                        "requirements",
-                                        Schema.builder()
-                                                .type(Type.Known.ARRAY)
-                                                .items(requirementSchema)
-                                                .build()
-                                ))
-                                .required("requirements")
-                                .build();
+                                "requirements",
+                                Schema.builder()
+                                        .type(Type.Known.ARRAY)
+                                        .items(requirementSchema)
+                                        .build()
+                        )
+                )
+                .required("requirements")
+                .build();
     }
 }

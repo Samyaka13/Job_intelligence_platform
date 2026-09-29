@@ -7,28 +7,54 @@ import com.samyak.job_intelligence.job.domain.RequirementMatchMode;
 import com.samyak.job_intelligence.job.domain.RequirementType;
 import com.samyak.job_intelligence.job.repository.JobRequirementRepository;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
 public class SkillMatchingService {
+
     private final CandidateSkillRepository candidateSkillRepository;
     private final JobRequirementRepository jobRequirementRepository;
 
-    public SkillMatchingService(CandidateSkillRepository candidateSkillRepository, JobRequirementRepository jobRequirementRepository) {
+    public SkillMatchingService(
+            CandidateSkillRepository candidateSkillRepository,
+            JobRequirementRepository jobRequirementRepository
+    ) {
         this.candidateSkillRepository = candidateSkillRepository;
         this.jobRequirementRepository = jobRequirementRepository;
     }
 
-    public SkillMatchResult match(Long candidateProfileId, Long jobId){
+    public SkillMatchResult match(Long candidateProfileId, Long jobId) {
+
         List<JobRequirement> requirements = new ArrayList<>();
 
-        requirements.addAll(jobRequirementRepository.findByJobIdAndRequirementType(jobId, RequirementType.LANGUAGE));
+        requirements.addAll(
+                jobRequirementRepository.findByJobIdAndRequirementType(
+                        jobId,
+                        RequirementType.LANGUAGE
+                )
+        );
 
-        requirements.addAll(jobRequirementRepository.findByJobIdAndRequirementType(jobId,RequirementType.TECHNOLOGY));
+        requirements.addAll(
+                jobRequirementRepository.findByJobIdAndRequirementType(
+                        jobId,
+                        RequirementType.TECHNOLOGY
+                )
+        );
 
-        if(requirements.isEmpty()){
-            return new SkillMatchResult(List.of(),List.of(),List.of(),List.of(),0,0,0,0);
+        if (requirements.isEmpty()) {
+            return new SkillMatchResult(
+                    List.of(),
+                    List.of(),
+                    List.of(),
+                    List.of(),
+                    0,
+                    0,
+                    0,
+                    0
+            );
         }
 
         Map<String, RequirementGroup> groups = requirements.stream()
@@ -42,7 +68,10 @@ public class SkillMatchingService {
                 ));
 
         List<String> requiredSkills = groups.values().stream()
-                .flatMap(group -> group.skills().stream())
+                .flatMap(group ->
+                        group.requirements().stream()
+                                .map(RequirementItem::skill)
+                )
                 .distinct()
                 .toList();
 
@@ -53,10 +82,16 @@ public class SkillMatchingService {
                                 requiredSkills
                         );
 
-        Set<String> candidateSkillSet = candidateSkills.stream()
-                .map(CandidateSkill::getNormalizedSkill)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toSet());
+        Map<String, CandidateSkill> candidateSkillMap =
+                candidateSkills.stream()
+                        .filter(skill ->
+                                skill.getNormalizedSkill() != null
+                        )
+                        .collect(Collectors.toMap(
+                                CandidateSkill::getNormalizedSkill,
+                                skill -> skill,
+                                (first, second) -> first
+                        ));
 
         List<String> matchedSkills = new ArrayList<>();
         List<String> missingSkills = new ArrayList<>();
@@ -69,31 +104,55 @@ public class SkillMatchingService {
 
         for (RequirementGroup group : groups.values()) {
 
-            boolean matched = isGroupMatched(group, candidateSkillSet);
+            Set<String> matchedGroupSkills = group.requirements().stream()
+                    .filter(requirement ->
+                            satisfiesRequirement(
+                                    requirement,
+                                    candidateSkillMap
+                            )
+                    )
+                    .map(RequirementItem::skill)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
 
-            List<String> groupMatchedSkills = group.skills().stream()
-                    .filter(candidateSkillSet::contains)
-                    .toList();
+            Set<String> missingGroupSkills = group.requirements().stream()
+                    .filter(requirement ->
+                            !satisfiesRequirement(
+                                    requirement,
+                                    candidateSkillMap
+                            )
+                    )
+                    .map(RequirementItem::skill)
+                    .collect(Collectors.toCollection(LinkedHashSet::new));
 
-            List<String> groupMissingSkills = group.skills().stream()
-                    .filter(skill -> !candidateSkillSet.contains(skill))
-                    .toList();
+            boolean groupMatched =
+                    isGroupMatched(
+                            group,
+                            candidateSkillMap
+                    );
 
-            if (matched) {
+            if (groupMatched) {
                 matchedRequirements++;
-                matchedSkills.addAll(groupMatchedSkills);
-            } else {
-                missingSkills.addAll(groupMissingSkills);
+            }
+
+            matchedSkills.addAll(matchedGroupSkills);
+
+            if (!groupMatched) {
+                missingSkills.addAll(missingGroupSkills);
             }
 
             if (group.mandatory()) {
                 mandatoryRequirements++;
-                mandatorySkills.addAll(group.skills());
+                mandatorySkills.addAll(
+                        group.requirements().stream()
+                                .map(RequirementItem::skill)
+                                .distinct()
+                                .toList()
+                );
 
-                if (matched) {
-                    matchedMandatoryRequirements++;
+                if (!groupMatched) {
+                    missingMandatorySkills.addAll(missingGroupSkills);
                 } else {
-                    missingMandatorySkills.addAll(groupMissingSkills);
+                    matchedMandatoryRequirements++;
                 }
             }
         }
@@ -112,17 +171,58 @@ public class SkillMatchingService {
 
     private boolean isGroupMatched(
             RequirementGroup group,
-            Set<String> candidateSkillSet
+            Map<String, CandidateSkill> candidateSkillMap
     ) {
+
         return switch (group.matchMode()) {
 
             case SINGLE, ANY_OF ->
-                    group.skills().stream()
-                            .anyMatch(candidateSkillSet::contains);
+                    group.requirements().stream()
+                            .anyMatch(requirement ->
+                                    satisfiesRequirement(
+                                            requirement,
+                                            candidateSkillMap
+                                    )
+                            );
 
             case ALL_OF ->
-                    candidateSkillSet.containsAll(group.skills());
+                    group.requirements().stream()
+                            .allMatch(requirement ->
+                                    satisfiesRequirement(
+                                            requirement,
+                                            candidateSkillMap
+                                    )
+                            );
         };
+    }
+
+    private boolean satisfiesRequirement(
+            RequirementItem requirement,
+            Map<String, CandidateSkill> candidateSkillMap
+    ) {
+
+        CandidateSkill candidateSkill =
+                candidateSkillMap.get(requirement.skill());
+
+        if (candidateSkill == null) {
+            return false;
+        }
+
+        BigDecimal yearsRequired =
+                requirement.yearsRequired();
+
+        if (yearsRequired == null) {
+            return true;
+        }
+
+        BigDecimal candidateYears =
+                candidateSkill.getYearsExperience();
+
+        if (candidateYears == null) {
+            return false;
+        }
+
+        return candidateYears.compareTo(yearsRequired) >= 0;
     }
 
     private String effectiveGroupId(JobRequirement requirement) {
@@ -133,24 +233,28 @@ public class SkillMatchingService {
             return requirement.getGroupId();
         }
 
-        /*
-         * Backward compatibility for requirements created before
-         * groupId was introduced.
-         */
         return "legacy:"
                 + requirement.getRequirementType()
                 + ":"
                 + requirement.getNormalizedValue();
     }
 
+    private record RequirementItem(
+            String skill,
+            BigDecimal yearsRequired
+    ) {
+    }
+
     private record RequirementGroup(
             String groupId,
             RequirementMatchMode matchMode,
             boolean mandatory,
-            List<String> skills
+            List<RequirementItem> requirements
     ) {
 
-        static RequirementGroup from(List<JobRequirement> requirements) {
+        static RequirementGroup from(
+                List<JobRequirement> requirements
+        ) {
 
             if (requirements.isEmpty()) {
                 throw new IllegalArgumentException(
@@ -158,28 +262,36 @@ public class SkillMatchingService {
                 );
             }
 
-            RequirementMatchMode matchMode = requirements.getFirst()
-                    .getRequirementMatchMode();
+            RequirementMatchMode matchMode =
+                    requirements.getFirst().getRequirementMatchMode();
 
             if (matchMode == null) {
                 matchMode = RequirementMatchMode.SINGLE;
             }
 
-            boolean mandatory = requirements.stream()
-                    .anyMatch(JobRequirement::isMandatory);
+            boolean mandatory =
+                    requirements.stream()
+                            .anyMatch(JobRequirement::isMandatory);
 
-            List<String> skills = requirements.stream()
-                    .map(JobRequirement::getNormalizedValue)
-                    .filter(Objects::nonNull)
-                    .filter(skill -> !skill.isBlank())
-                    .distinct()
-                    .toList();
+            List<RequirementItem> items =
+                    requirements.stream()
+                            .map(requirement ->
+                                    new RequirementItem(
+                                            requirement.getNormalizedValue(),
+                                            requirement.getYearsRequired()
+                                    )
+                            )
+                            .filter(item ->
+                                    item.skill() != null
+                                            && !item.skill().isBlank()
+                            )
+                            .toList();
 
             return new RequirementGroup(
                     requirements.getFirst().getGroupId(),
                     matchMode,
                     mandatory,
-                    skills
+                    items
             );
         }
     }

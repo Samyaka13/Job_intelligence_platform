@@ -45,6 +45,16 @@ public class JobQualificationService {
             rejectionReasons.add("Job employment type does not match candidate preferences");
         }
 
+        if (job.getExperienceMaxYears() != null
+                && candidateProfile.getExperienceYears() != null
+                && candidateProfile.getExperienceYears()
+                .compareTo(job.getExperienceMaxYears()) > 0) {
+
+            rejectionReasons.add(
+                    "Candidate experience exceeds job maximum experience"
+            );
+        }
+
         if(job.getSalaryMax() != null &&
                 candidateProfile.getMinimumSalary() != null &&
                 job.getSalaryCurrency() != null &&
@@ -59,42 +69,63 @@ public class JobQualificationService {
 
 
     private boolean hasMatchingLocation(
-            List<JobLocation> jobLocations,
+            List<JobLocation> locations,
             List<String> preferredLocations
     ) {
-        return jobLocations.stream()
-                .flatMap(location ->
-                        java.util.stream.Stream.of(
-                                location.getCity(),
-                                location.getState(),
-                                location.getCountry(),
-                                location.getDisplayText()
-                        )
-                )
-                .filter(java.util.Objects::nonNull)
-                .map(location ->
-                        candidateTextNormalizer
-                                .normalizeLocations(List.of(location))
-                                .getFirst()
-                )
+
+        if (locations == null || locations.isEmpty()) {
+            return true;
+        }
+
+        List<JobLocation> knownLocations = locations.stream()
+                .filter(this::hasKnownLocation)
+                .toList();
+
+        // We cannot determine a mismatch when every job location is unknown.
+        if (knownLocations.isEmpty()) {
+            return true;
+        }
+
+        return knownLocations.stream()
                 .anyMatch(jobLocation ->
                         preferredLocations.stream()
                                 .anyMatch(preferredLocation ->
-                                        locationsMatch(
-                                                jobLocation,
-                                                preferredLocation
-                                        )
+                                        locationsMatch(jobLocation, preferredLocation)
                                 )
                 );
     }
 
+
+    private boolean hasKnownLocation(JobLocation location) {
+
+        if (location == null) {
+            return false;
+        }
+
+        return isNotBlank(location.getCity())
+                || isNotBlank(location.getState())
+                || isNotBlank(location.getCountry())
+                || isNotBlank(location.getDisplayText());
+    }
+
+    private boolean isNotBlank(String value) {
+        return value != null && !value.isBlank();
+    }
+
     private boolean locationsMatch(
-            String jobLocation,
+            JobLocation jobLocation,
             String preferredLocation
     ) {
-        return jobLocation.equals(preferredLocation)
-                || jobLocation.startsWith(preferredLocation + " ")
-                || preferredLocation.startsWith(jobLocation + " ");
+
+        String jobLocationValue = jobLocation.getCity();
+
+        if (jobLocationValue == null || jobLocationValue.isBlank()) {
+            return false;
+        }
+
+        return jobLocationValue.equals(preferredLocation)
+                || jobLocationValue.startsWith(preferredLocation + " ")
+                || preferredLocation.startsWith(jobLocationValue + " ");
     }
 
 

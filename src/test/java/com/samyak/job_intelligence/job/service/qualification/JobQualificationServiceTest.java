@@ -798,4 +798,52 @@ class JobQualificationServiceTest {
 
         assertTrue(result.qualified());
     }
+
+    @Test
+    void shouldNotRejectWhenJobLocationIsUnknown() throws Exception {
+
+        JsonNode preferredLocations =
+                new ObjectMapper().readTree("""
+                [
+                    "Bangalore"
+                ]
+                """);
+
+        Job job = createJob(
+                new BigDecimal("2"),
+                new BigDecimal("5"),
+                null,
+                null,
+                null,
+                EmploymentType.FULL_TIME
+        );
+
+        List<JobLocation> locations = List.of(
+                createLocation(
+                        job,
+                        null,
+                        null,
+                        null,
+                        null
+                )
+        );
+
+        CandidateProfile candidate = createCandidate(
+                preferredLocations,
+                null,
+                null,
+                new BigDecimal("2"),
+                null
+        );
+
+        JobQualificationResult result =
+                service.qualify(
+                        job,
+                        candidate,
+                        locations
+                );
+
+        assertTrue(result.qualified());
+        assertTrue(result.rejectionReasons().isEmpty());
+    }
 }

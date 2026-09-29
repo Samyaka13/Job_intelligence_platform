@@ -121,9 +121,9 @@ class JobIngestionServiceIT {
                         "https://example.com/apply/123",
                         List.of(
                                 new RawJobLocation(
-                                        null,
-                                        null,
-                                        null,
+                                        "Bangalore",
+                                        "Karnataka",
+                                        "India",
                                         "Bangalore, Karnataka, India"
                                 )
                         ),
@@ -228,6 +228,15 @@ class JobIngestionServiceIT {
 
         assertThat(location.getJob().getId())
                 .isEqualTo(job.getId());
+
+        assertThat(location.getCity())
+                .isEqualTo("bangalore");
+
+        assertThat(location.getState())
+                .isEqualTo("karnataka");
+
+        assertThat(location.getCountry())
+                .isEqualTo("india");
 
         assertThat(location.getDisplayText())
                 .isEqualTo("bangalore, karnataka, india");
@@ -707,5 +716,131 @@ class JobIngestionServiceIT {
 
         assertThat(jobBListing.getJobSource().getId())
                 .isEqualTo(source.getId());
+    }
+
+    @Test
+    @Transactional
+    void shouldUpdateLocationsWhenExistingJobIsReingested() {
+
+        Company company = companyRepository.save(
+                new Company(
+                        "location-update-test",
+                        "Location Update Test",
+                        "https://example.com"
+                )
+        );
+
+        JobSource source =
+                jobSourceRepository.findByCode("GREENHOUSE")
+                        .orElseThrow();
+
+        SourceConfiguration sourceConfiguration =
+                new SourceConfiguration(
+                        company,
+                        source,
+                        JsonNodeFactory.instance.objectNode()
+                                .put("boardToken", "test-board"),
+                        true
+                );
+
+        RawJobListing firstListing =
+                new RawJobListing(
+                        "location-123",
+                        "Software Engineer",
+                        "Build software.",
+                        "https://example.com/jobs/location-123",
+                        "https://example.com/apply/location-123",
+                        List.of(
+                                new RawJobLocation(
+                                        null,
+                                        null,
+                                        null,
+                                        "Paris, France"
+                                )
+                        ),
+                        Instant.now(),
+                        null
+                );
+
+        RawJobListing secondListing =
+                new RawJobListing(
+                        "location-123",
+                        "Software Engineer",
+                        "Build software.",
+                        "https://example.com/jobs/location-123",
+                        "https://example.com/apply/location-123",
+                        List.of(
+                                new RawJobLocation(
+                                        "Paris",
+                                        null,
+                                        "France",
+                                        "Paris, France"
+                                )
+                        ),
+                        Instant.now(),
+                        null
+                );
+
+        when(collector.getSource())
+                .thenReturn("GREENHOUSE");
+
+        when(collector.collect(any(SourceConfiguration.class)))
+                .thenReturn(List.of(firstListing));
+
+        when(jobRequirementExtractionService.extract(anyString()))
+                .thenReturn(List.of());
+
+        jobIngestionService.ingest(
+                company.getId(),
+                company.getCanonicalName(),
+                collector,
+                sourceConfiguration
+        );
+
+        Job firstJob =
+                jobRepository.findAll()
+                        .getFirst();
+
+        Long jobId = firstJob.getId();
+
+        List<JobLocation> firstLocations =
+                jobLocationRepository.findByJobId(jobId);
+
+        assertThat(firstLocations)
+                .hasSize(1);
+
+        assertThat(firstLocations.getFirst().getCity())
+                .isNull();
+
+        when(collector.collect(any(SourceConfiguration.class)))
+                .thenReturn(List.of(secondListing));
+
+        jobIngestionService.ingest(
+                company.getId(),
+                company.getCanonicalName(),
+                collector,
+                sourceConfiguration
+        );
+
+        List<JobLocation> updatedLocations =
+                jobLocationRepository.findByJobId(jobId);
+
+        assertThat(updatedLocations)
+                .hasSize(1);
+
+        JobLocation updatedLocation =
+                updatedLocations.getFirst();
+
+        assertThat(updatedLocation.getCity())
+                .isEqualTo("paris");
+
+        assertThat(updatedLocation.getCountry())
+                .isEqualTo("france");
+
+        assertThat(updatedLocation.getState())
+                .isNull();
+
+        assertThat(updatedLocation.getDisplayText())
+                .isEqualTo("paris, france");
     }
 }

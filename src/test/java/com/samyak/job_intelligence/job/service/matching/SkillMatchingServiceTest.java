@@ -8,6 +8,7 @@ import com.samyak.job_intelligence.job.domain.RequirementType;
 import com.samyak.job_intelligence.job.repository.JobRequirementRepository;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -490,7 +491,10 @@ class SkillMatchingServiceTest {
 
         SkillMatchResult result = service.match(1L, 1L);
 
-        assertTrue(result.matchedSkill().isEmpty());
+        assertEquals(
+                List.of("java"),
+                result.matchedSkill()
+        );
 
         assertEquals(
                 List.of("spring boot"),
@@ -571,6 +575,11 @@ class SkillMatchingServiceTest {
         SkillMatchResult result = service.match(1L, 1L);
 
         assertEquals(
+                List.of("java"),
+                result.matchedSkill()
+        );
+
+        assertEquals(
                 List.of("spring boot"),
                 result.missingSkill()
         );
@@ -584,6 +593,129 @@ class SkillMatchingServiceTest {
         assertEquals(1, result.mandatoryRequirements());
         assertEquals(0, result.matchedRequirements());
         assertEquals(0, result.matchedMandatoryRequirements());
+    }
+
+    @Test
+    void shouldNotMatchSkillWhenCandidateHasInsufficientExperience() {
+
+        JobRequirement sql =
+                requirement(
+                        "sql",
+                        "sql-group",
+                        RequirementMatchMode.SINGLE,
+                        true,
+                        BigDecimal.valueOf(5)
+                );
+
+        givenRequirements(List.of(sql));
+
+        CandidateSkill candidateSql =
+                candidateSkill(
+                        "sql",
+                        BigDecimal.valueOf(1)
+                );
+
+        givenCandidateSkills(candidateSql);
+
+        SkillMatchResult result = service.match(1L, 1L);
+
+        assertTrue(result.matchedSkill().isEmpty());
+
+        assertEquals(
+                List.of("sql"),
+                result.missingSkill()
+        );
+
+        assertEquals(
+                List.of("sql"),
+                result.mandatorySkills()
+        );
+
+        assertEquals(
+                List.of("sql"),
+                result.missingMandatorySkills()
+        );
+
+        assertEquals(1, result.totalRequirements());
+        assertEquals(1, result.mandatoryRequirements());
+        assertEquals(0, result.matchedRequirements());
+        assertEquals(0, result.matchedMandatoryRequirements());
+    }
+
+    @Test
+    void shouldMatchSkillWhenCandidateHasExactlyRequiredExperience() {
+
+        JobRequirement sql =
+                requirement(
+                        "sql",
+                        "sql-group",
+                        RequirementMatchMode.SINGLE,
+                        true,
+                        BigDecimal.valueOf(5)
+                );
+
+        givenRequirements(List.of(sql));
+
+        CandidateSkill candidateSql =
+                candidateSkill(
+                        "sql",
+                        BigDecimal.valueOf(5)
+                );
+
+        givenCandidateSkills(candidateSql);
+
+        SkillMatchResult result = service.match(1L, 1L);
+
+        assertEquals(
+                List.of("sql"),
+                result.matchedSkill()
+        );
+
+        assertTrue(result.missingSkill().isEmpty());
+        assertTrue(result.missingMandatorySkills().isEmpty());
+
+        assertEquals(1, result.totalRequirements());
+        assertEquals(1, result.mandatoryRequirements());
+        assertEquals(1, result.matchedRequirements());
+        assertEquals(1, result.matchedMandatoryRequirements());
+    }
+
+    @Test
+    void shouldMatchSkillWhenCandidateHasMoreExperienceThanRequired() {
+
+        JobRequirement sql =
+                requirement(
+                        "sql",
+                        "sql-group",
+                        RequirementMatchMode.SINGLE,
+                        true,
+                        BigDecimal.valueOf(5)
+                );
+
+        givenRequirements(List.of(sql));
+
+        CandidateSkill candidateSql =
+                candidateSkill(
+                        "sql",
+                        BigDecimal.valueOf(6)
+                );
+
+        givenCandidateSkills(candidateSql);
+
+        SkillMatchResult result = service.match(1L, 1L);
+
+        assertEquals(
+                List.of("sql"),
+                result.matchedSkill()
+        );
+
+        assertTrue(result.missingSkill().isEmpty());
+        assertTrue(result.missingMandatorySkills().isEmpty());
+
+        assertEquals(1, result.totalRequirements());
+        assertEquals(1, result.mandatoryRequirements());
+        assertEquals(1, result.matchedRequirements());
+        assertEquals(1, result.matchedMandatoryRequirements());
     }
 
     private JobRequirement requirement(
@@ -612,11 +744,45 @@ class SkillMatchingServiceTest {
         return requirement;
     }
 
+    private JobRequirement requirement(
+            String normalizedValue,
+            String groupId,
+            RequirementMatchMode matchMode,
+            boolean mandatory,
+            BigDecimal yearsRequired
+    ) {
+        JobRequirement requirement =
+                requirement(
+                        normalizedValue,
+                        groupId,
+                        matchMode,
+                        mandatory
+                );
+
+        when(requirement.getYearsRequired())
+                .thenReturn(yearsRequired);
+
+        return requirement;
+    }
+
     private CandidateSkill candidateSkill(String normalizedSkill) {
         CandidateSkill candidateSkill = mock(CandidateSkill.class);
 
         when(candidateSkill.getNormalizedSkill())
                 .thenReturn(normalizedSkill);
+
+        return candidateSkill;
+    }
+
+    private CandidateSkill candidateSkill(
+            String normalizedSkill,
+            BigDecimal yearsExperience
+    ) {
+        CandidateSkill candidateSkill =
+                candidateSkill(normalizedSkill);
+
+        when(candidateSkill.getYearsExperience())
+                .thenReturn(yearsExperience);
 
         return candidateSkill;
     }

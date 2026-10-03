@@ -30,6 +30,7 @@ public class CandidateSkillService {
 
 
     @Transactional
+
     public CandidateSkill addSkill(
             Long candidateProfileId,
             String skill,

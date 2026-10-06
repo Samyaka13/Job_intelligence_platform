@@ -21,8 +21,9 @@ public class CandidateDailyDigestController {
     }
 
     @GetMapping("/{candidateProfileId}/daily-digest")
-    public DailyDigestResponse getDailyDigest(@PathVariable Long candidateProfileId,
-    @RequestParam(defaultValue = "10") @Min(1) @Max(100) int limit
+    public DailyDigestResponse getDailyDigest(
+            @PathVariable Long candidateProfileId,
+            @RequestParam(defaultValue = "10") @Min(1) @Max(100) int limit
     ){
         DailyDigest digest = dailyDigestService.generate(candidateProfileId,limit);
         return DailyDigestResponse.from(digest);

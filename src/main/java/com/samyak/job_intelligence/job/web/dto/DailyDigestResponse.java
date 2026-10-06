@@ -7,8 +7,13 @@ import java.time.Instant;
 import java.util.List;
 
 
-public record DailyDigestResponse (Long candidateProfileId, Instant generatedAt, List<DailyDigestItem> jobs){
+public record DailyDigestResponse (
+        Long candidateProfileId,
+        Instant generatedAt,
+        List<DailyDigestItem> jobs){
     public static DailyDigestResponse from(DailyDigest digest){
-        return new DailyDigestResponse(digest.candidateProfileId(),digest.generatedAt(),digest.matches().stream().map(DailyDigestItem::from).toList());
+        return new DailyDigestResponse(digest.candidateProfileId(),
+                digest.generatedAt(),
+                digest.matches().stream().map(DailyDigestItem::from).toList());
     }
 }

@@ -2,6 +2,7 @@ package com.samyak.job_intelligence.job.service.matching;
 
 import com.samyak.job_intelligence.candidate.domain.CandidateProfile;
 import com.samyak.job_intelligence.candidate.repository.CandidateProfileRepository;
+import com.samyak.job_intelligence.candidate.service.CandidateProfileService;
 import com.samyak.job_intelligence.job.domain.Job;
 import com.samyak.job_intelligence.job.domain.JobMatch;
 import com.samyak.job_intelligence.job.repository.JobMatchRepository;
@@ -16,23 +17,21 @@ import java.util.Optional;
 @Transactional
 public class JobMatchPersistenceService {
     private final JobMatchRepository jobMatchRepository;
-    private final CandidateProfileRepository candidateProfileRepository;
     private final JobService jobService;
     private final JobMatchPersistenceMapper jobMatchPersistenceMapper;
+    private final CandidateProfileService candidateProfileService;
 
 
-    public JobMatchPersistenceService(JobMatchRepository jobMatchRepository, CandidateProfileRepository candidateProfileRepository, JobService jobService, JobMatchPersistenceMapper jobMatchPersistenceMapper) {
+public JobMatchPersistenceService(JobMatchRepository jobMatchRepository, JobService jobService, JobMatchPersistenceMapper jobMatchPersistenceMapper,CandidateProfileService candidateProfileService) {
         this.jobMatchRepository = jobMatchRepository;
-        this.candidateProfileRepository = candidateProfileRepository;
         this.jobService = jobService;
         this.jobMatchPersistenceMapper = jobMatchPersistenceMapper;
+        this.candidateProfileService = candidateProfileService;
     }
 
     public JobMatch save(Long jobId, Long candidateProfileId, JobMatchResult jobMatchResult, Instant evaluatedAt){
         Job job = jobService.getById(jobId);
-        CandidateProfile candidateProfile = candidateProfileRepository.findById(candidateProfileId).orElseThrow(() ->  new IllegalArgumentException(
-                "Candidate profile not found: " + candidateProfileId
-        ));
+        CandidateProfile candidateProfile = candidateProfileService.getById(candidateProfileId);
         JobMatchPersistenceData  data = jobMatchPersistenceMapper.map(jobMatchResult,evaluatedAt);
 
 //        JobMatch jobMatch = jobMatchRepository.findByJobIdAndCandidateProfileId(jobId,candidateProfileId).orElseGet(() ->

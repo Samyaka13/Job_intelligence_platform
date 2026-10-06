@@ -1,7 +1,7 @@
 package com.samyak.job_intelligence.job.service.matching;
 
 import com.samyak.job_intelligence.candidate.domain.CandidateProfile;
-import com.samyak.job_intelligence.candidate.repository.CandidateProfileRepository;
+import com.samyak.job_intelligence.candidate.service.CandidateProfileService;
 import com.samyak.job_intelligence.job.domain.Job;
 import com.samyak.job_intelligence.job.domain.JobMatch;
 import com.samyak.job_intelligence.job.repository.JobMatchRepository;
@@ -28,9 +28,6 @@ class JobMatchPersistenceServiceTest {
     private JobMatchRepository jobMatchRepository;
 
     @Mock
-    private CandidateProfileRepository candidateProfileRepository;
-
-    @Mock
     private JobService jobService;
 
     @Mock
@@ -38,6 +35,10 @@ class JobMatchPersistenceServiceTest {
 
     @Mock
     private JobMatchResult jobMatchResult;
+
+    @Mock
+    private CandidateProfileService candidateProfileService;
+
 
     @Test
     void shouldCreateNewJobMatchWhenMatchDoesNotExist() {
@@ -70,8 +71,9 @@ class JobMatchPersistenceServiceTest {
 
         when(jobService.getById(jobId)).thenReturn(job);
 
-        when(candidateProfileRepository.findById(candidateProfileId))
-                .thenReturn(Optional.of(candidateProfile));
+
+        when(candidateProfileService.getById(candidateProfileId))
+                .thenReturn(candidateProfile);
 
         when(persistenceMapper.map(jobMatchResult, evaluatedAt))
                 .thenReturn(data);
@@ -88,9 +90,9 @@ class JobMatchPersistenceServiceTest {
 
         JobMatch result = new JobMatchPersistenceService(
                 jobMatchRepository,
-                candidateProfileRepository,
                 jobService,
-                persistenceMapper
+                persistenceMapper,
+                candidateProfileService
         ).save(
                 jobId,
                 candidateProfileId,
@@ -194,8 +196,10 @@ class JobMatchPersistenceServiceTest {
 
         when(jobService.getById(jobId)).thenReturn(job);
 
-        when(candidateProfileRepository.findById(candidateProfileId))
-                .thenReturn(Optional.of(candidateProfile));
+
+
+        when(candidateProfileService.getById(candidateProfileId))
+                .thenReturn(candidateProfile);
 
         when(persistenceMapper.map(jobMatchResult, evaluatedAt))
                 .thenReturn(data);
@@ -210,9 +214,9 @@ class JobMatchPersistenceServiceTest {
 
         JobMatch result = new JobMatchPersistenceService(
                 jobMatchRepository,
-                candidateProfileRepository,
                 jobService,
-                persistenceMapper
+                persistenceMapper,
+                candidateProfileService
         ).save(
                 jobId,
                 candidateProfileId,

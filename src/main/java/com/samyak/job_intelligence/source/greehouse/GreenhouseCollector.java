@@ -39,6 +39,6 @@ public class GreenhouseCollector implements JobSourceCollector {
         String boardToken = boardTokenNode.asString();
 
         GreenhouseJobsResponse greenhouseJobsResponse = greenhouseClient.getJobs(boardToken);
-        return  greenhouseJobsResponse.jobs().stream().map(job -> greenhouseJobMapper.map(job)).toList();
+        return  greenhouseJobsResponse.jobs().stream().map(greenhouseJobMapper :: map).toList();
     }
 }

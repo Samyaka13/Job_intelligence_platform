@@ -6,12 +6,14 @@ import com.samyak.job_intelligence.job.domain.JobRequirement;
 import com.samyak.job_intelligence.job.domain.RequirementMatchMode;
 import com.samyak.job_intelligence.job.domain.RequirementType;
 import com.samyak.job_intelligence.job.repository.JobRequirementRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class SkillMatchingService {
 
@@ -44,6 +46,13 @@ public class SkillMatchingService {
                 )
         );
 
+        if(jobId == 1654){
+            for (JobRequirement requirement : requirements) {
+                log.info( "Testing Samyak: value={}, type={}", requirement.getValue(), requirement.getRequirementType());
+            }
+        }
+
+
         if (requirements.isEmpty()) {
             return new SkillMatchResult(
                     List.of(),
@@ -60,7 +69,7 @@ public class SkillMatchingService {
         Map<String, RequirementGroup> groups = requirements.stream()
                 .collect(Collectors.groupingBy(
                         this::effectiveGroupId,
-                        LinkedHashMap::new,
+                        LinkedHashMap::new,//This code makes groupIds stored in LinkedHashMap (not just hashmap) preserving the order
                         Collectors.collectingAndThen(
                                 Collectors.toList(),
                                 RequirementGroup::from
@@ -157,6 +166,17 @@ public class SkillMatchingService {
             }
         }
 
+        if(jobId == 1654){
+            log.info("matchedSkills : {},missingSkills : {},mandatorySkills: {},missingMandatorySkills : {},mandatoryRequirements: {},matchedRequirements: {},matchedMandatoryRequirements:{}",
+                    matchedSkills,
+                    missingSkills,
+                    mandatorySkills,
+                    missingMandatorySkills,
+                    mandatoryRequirements,
+                    matchedRequirements,
+                    matchedMandatoryRequirements
+                    );
+        }
         return new SkillMatchResult(
                 List.copyOf(matchedSkills),
                 List.copyOf(missingSkills),
@@ -233,6 +253,11 @@ public class SkillMatchingService {
             return requirement.getGroupId();
         }
 
+        //This group id function was created later that is way all the jobs that were already ingested before this feature does not have groupId so we make groupId for them separately
+        // That is why we did not directly use requirements.stream()
+        //    .collect(Collectors.groupingBy(
+        //        requirement -> requirement.getGroupId()
+        //    ));
         return "legacy:"
                 + requirement.getRequirementType()
                 + ":"

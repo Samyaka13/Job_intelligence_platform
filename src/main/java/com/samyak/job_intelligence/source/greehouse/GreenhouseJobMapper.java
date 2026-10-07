@@ -2,6 +2,7 @@ package com.samyak.job_intelligence.source.greehouse;
 
 import com.samyak.job_intelligence.source.service.RawJobListing;
 import com.samyak.job_intelligence.source.service.RawJobLocation;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import tools.jackson.databind.JsonNode;
 
@@ -12,6 +13,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+@Slf4j
 @Component
 public class GreenhouseJobMapper {
 

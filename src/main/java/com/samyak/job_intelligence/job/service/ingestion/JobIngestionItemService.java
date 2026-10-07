@@ -11,6 +11,7 @@ import com.samyak.job_intelligence.job.service.requirement.JobRequirementService
 import com.samyak.job_intelligence.llm.JobDescriptionCleaner;
 import com.samyak.job_intelligence.source.service.JobSourceListingService;
 import com.samyak.job_intelligence.source.service.RawJobListing;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -19,6 +20,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
+@Slf4j
 @Service
 public class JobIngestionItemService {
 
@@ -65,6 +67,11 @@ public class JobIngestionItemService {
             );
         }
 
+        if(job !=null && job.getId() == 1836){
+            log.info("Job Description SHER: {}",JobDescriptionCleaner.clean(normalizedJobData.description()));
+        }
+
+
         System.out.println(
                 "LOOKUP -> fingerprint=" +
                         normalizedJobData.canonicalFingerprint() +
@@ -106,9 +113,7 @@ public class JobIngestionItemService {
                             + ", min=" + normalizedJobData.experienceMinYears()
                             + ", max=" + normalizedJobData.experienceMaxYears()
             );
-            if(job.getId() == 91){
-                System.out.println("ID WITH 91 got updated");
-            }
+
             job.updateNormalizedFields(
                     normalizedJobData.employmentType(),
                     normalizedJobData.seniorityLevel(),

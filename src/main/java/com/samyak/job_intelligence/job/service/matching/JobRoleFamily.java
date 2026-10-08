@@ -1,0 +1,14 @@
+package com.samyak.job_intelligence.job.service.matching;
+
+public enum JobRoleFamily {
+    BACKEND_ENGINEERING,
+    FULL_STACK_ENGINEERING,
+    FRONTEND_ENGINEERING,
+    DATA_SCIENCE,
+    DATA_ENGINEERING,
+    PLATFORM_DEVOPS,
+    AI_APPLICATION_ENGINEERING,
+    CONSULTING_VALUE_ENGINEERING,
+    SALES_ENGINEERING,
+    UNKNOWN
+}

@@ -36,7 +36,7 @@ class JobRequirementExtractionServiceTest {
     }
 
     @Test
-    void shouldPreferLlmResultWhenSameRequirementExists() {
+    void shouldPreserveDifferentMandatoryMeaningWhenSameValueExists() {
 
         String description =
                 "Java is required. Kafka is a plus.";
@@ -80,11 +80,9 @@ class JobRequirementExtractionServiceTest {
         List<ExtractedJobRequirement> result =
                 service.extract(description);
 
-        assertThat(result)
-                .hasSize(1);
-
-        assertThat(result.getFirst().mandatory())
-                .isFalse();
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(ExtractedJobRequirement::mandatory)
+                .containsExactly(true, false);
 
         verify(ruleExtractor)
                 .extract(description);
@@ -152,7 +150,7 @@ class JobRequirementExtractionServiceTest {
     }
 
     @Test
-    void shouldDeduplicateSameRequirement() {
+    void shouldPreserveSeparateMandatoryAndPreferredRequirements() {
 
         ExtractedJobRequirement ruleResult =
                 new ExtractedJobRequirement(
@@ -193,11 +191,9 @@ class JobRequirementExtractionServiceTest {
         List<ExtractedJobRequirement> result =
                 service.extract("Java is preferred.");
 
-        assertThat(result)
-                .hasSize(1);
-
-        assertThat(result.getFirst().mandatory())
-                .isFalse();
+        assertThat(result).hasSize(2);
+        assertThat(result).extracting(ExtractedJobRequirement::mandatory)
+                .containsExactly(true, false);
     }
 
     @Test

@@ -91,7 +91,7 @@ public class JobMatch extends AuditableEntity {
         //required by JPA
     }
 
-    public JobMatch(Job job, CandidateProfile candidateProfile, boolean hardQualified, BigDecimal skillScore, BigDecimal experienceScore, BigDecimal roleScore, BigDecimal locationScore, BigDecimal semanticScore, BigDecimal salaryScore, BigDecimal finalScore, String matchReasoning, String llmProvider, String llmModel, String llmPromptVersion, Instant evaluatedAt, List<String> mandatorySkills, List<String> missingMandatorySkills) {
+    public JobMatch(Job job, CandidateProfile candidateProfile, boolean hardQualified, BigDecimal skillScore, BigDecimal experienceScore, BigDecimal roleScore, BigDecimal locationScore, BigDecimal salaryScore, BigDecimal semanticScore, BigDecimal finalScore, String matchReasoning, String llmProvider, String llmModel, String llmPromptVersion, Instant evaluatedAt, List<String> mandatorySkills, List<String> missingMandatorySkills) {
         this.job = job;
         this.candidateProfile = candidateProfile;
         this.hardQualified = hardQualified;
@@ -99,8 +99,8 @@ public class JobMatch extends AuditableEntity {
         this.experienceScore = experienceScore;
         this.roleScore = roleScore;
         this.locationScore = locationScore;
-        this.semanticScore = semanticScore;
         this.salaryScore = salaryScore;
+        this.semanticScore = semanticScore;
         this.finalScore = finalScore;
         this.matchReasoning = matchReasoning;
         this.llmProvider = llmProvider;

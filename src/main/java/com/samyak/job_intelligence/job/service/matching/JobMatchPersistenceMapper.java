@@ -45,10 +45,10 @@ public class JobMatchPersistenceMapper {
                 true,
                 skillScore,
                 null,
+                matchResult.jobOverallScore().seniorityScore(),
                 null,
                 null,
-                null,
-                null,
+                matchResult.jobOverallScore().roleScore(),
                 matchResult.jobOverallScore().finalScore(),
                 buildMatchReasoning(matchResult),
                 null,
@@ -68,6 +68,9 @@ public class JobMatchPersistenceMapper {
         return "Matched skills: "
                 + String.join(", ", skillMatchResult.matchedSkill())
                 + "; Missing skills: "
-                + String.join(", ", skillMatchResult.missingSkill());
+                + String.join(", ", skillMatchResult.missingSkill())
+                + "; Role fit: " + matchResult.jobOverallScore().roleScore()
+                + "; Seniority fit: " + matchResult.jobOverallScore().seniorityScore()
+                + "; Unverified qualifications are not treated as matched.";
     }
 }

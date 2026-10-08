@@ -2,12 +2,9 @@ package com.samyak.job_intelligence.job.service.matching;
 
 import java.math.BigDecimal;
 
-public record JobOverallScore (
-        BigDecimal finalScore,
+public record RoleMatchResult(
+        JobRoleFamily jobRoleFamily,
         BigDecimal roleScore,
         BigDecimal seniorityScore
 ) {
-    public JobOverallScore(BigDecimal finalScore) {
-        this(finalScore, null, null);
-    }
 }

@@ -337,6 +337,21 @@ public class LlmRequirementPromptBuilder {
                 }
 
             36. Return only valid JSON matching the requested schema.
+
+            37. Do not emit broad behavioural, communication, project-management,
+                stakeholder-management, business-acumen, or cross-functional-work
+                statements as exact matchable values. Preserve them only when they
+                are a concrete, verifiable qualification; otherwise omit them.
+
+            38. Do not flatten conditional qualification paths into an incorrect
+                ANY_OF or ALL_OF group. For example, "MSc plus 2 years OR BS plus
+                3 years" cannot be represented by this schema. Preserve it as one
+                EXPERIENCE value with requirementMatchMode=SINGLE and yearsRequired=null.
+
+            39. Programming languages such as Java, Python, and R are TECHNOLOGY.
+                Human languages such as English and German are LANGUAGE. The
+                application scores only technical evidence automatically; human
+                languages remain explicit, unverified qualifications.
             """;
     }
 

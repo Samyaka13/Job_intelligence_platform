@@ -62,4 +62,27 @@ class JobOverallScoringServiceTest {
                 result.finalScore()
         );
     }
+
+    @Test
+    void shouldPenalizeMissingMandatoryTechnicalSkillsInCompositeScore() {
+        SkillMatchScore skill = new SkillMatchScore(
+                new BigDecimal("0.5000"),
+                new BigDecimal("0.5000"),
+                new BigDecimal("0.0000"),
+                true
+        );
+
+        JobOverallScore result = service.calculate(
+                skill,
+                new RoleMatchResult(
+                        JobRoleFamily.DATA_SCIENCE,
+                        new BigDecimal("50"),
+                        new BigDecimal("60")
+                )
+        );
+
+        assertEquals(new BigDecimal("23.18"), result.finalScore());
+        assertEquals(new BigDecimal("50"), result.roleScore());
+        assertEquals(new BigDecimal("60"), result.seniorityScore());
+    }
 }

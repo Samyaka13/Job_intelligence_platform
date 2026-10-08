@@ -31,10 +31,9 @@ public class LlmRequirementExtractor implements RequirementExtractor {
 
         String systemPrompt  = llmRequirementPromptBuilder.systemPrompt();
 
-        String cleanedDesc = JobDescriptionCleaner.clean(jobDescription);
 
         // I am writing this to remove the HTML thing from the JD coming from GREENHOUSE To reduce the token cost of input
-        String userPrompt = llmRequirementPromptBuilder.userPrompt(cleanedDesc);
+        String userPrompt = llmRequirementPromptBuilder.userPrompt(jobDescription);
 
         String response = llmClient.generate(systemPrompt,userPrompt);
 

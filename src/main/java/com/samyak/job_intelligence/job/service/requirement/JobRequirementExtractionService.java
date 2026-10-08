@@ -40,10 +40,21 @@ public class JobRequirementExtractionService {
         if(results == null) return;
 
         for(ExtractedJobRequirement requirement : results){
-            String key =
-                    requirement.normalizedValue();
+            // A value alone is not a requirement identity.  "MSc" can be both a
+            // minimum qualification and a preferred qualification in the same JD.
+            // Collapsing those rows was silently changing the meaning of a job.
+            String key = String.join("|",
+                    requirement.requirementType().name(),
+                    requirement.normalizedValue(),
+                    Boolean.toString(requirement.mandatory()),
+                    requirement.requirementMatchMode().name(),
+                    normalizeEvidence(requirement.requirementText()));
 
             merged.put(key, requirement);
         }
+    }
+
+    private String normalizeEvidence(String text) {
+        return text == null ? "" : text.trim().replaceAll("\\s+", " ").toLowerCase();
     }
 }

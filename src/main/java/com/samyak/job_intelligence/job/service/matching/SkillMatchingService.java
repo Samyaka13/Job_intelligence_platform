@@ -36,7 +36,7 @@ public class SkillMatchingService {
                 jobRequirementRepository.findByJobIdAndRequirementType(
                         jobId,
                         RequirementType.LANGUAGE
-                )
+                ).stream().filter(requirement -> isTechnicalLanguage(requirement.getNormalizedValue())).toList()
         );
 
         requirements.addAll(
@@ -243,6 +243,14 @@ public class SkillMatchingService {
         }
 
         return candidateYears.compareTo(yearsRequired) >= 0;
+    }
+
+    private boolean isTechnicalLanguage(String normalizedValue) {
+        if (normalizedValue == null) return false;
+        return switch (normalizedValue) {
+            case "java", "javascript", "typescript", "python", "r", "go", "golang", "c", "c++", "c#", "kotlin", "ruby", "scala", "php", "swift" -> true;
+            default -> false;
+        };
     }
 
     private String effectiveGroupId(JobRequirement requirement) {

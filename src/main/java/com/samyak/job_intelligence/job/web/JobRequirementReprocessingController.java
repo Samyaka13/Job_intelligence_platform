@@ -27,9 +27,17 @@ public class JobRequirementReprocessingController {
         );
     }
 
+    @PostMapping("/requirements/reprocess-active")
+    public ReprocessActiveResponse reprocessActive() {
+        return new ReprocessActiveResponse(service.reprocessAllActive());
+    }
+
     public record ReprocessResponse(
             Long jobId,
             int requirementsCount
     ) {
+    }
+
+    public record ReprocessActiveResponse(int requirementsCount) {
     }
 }

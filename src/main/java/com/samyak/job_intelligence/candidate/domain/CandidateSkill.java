@@ -32,7 +32,7 @@ public class CandidateSkill extends AuditableEntity {
     private String skill;
 
     @Column(name = "normalized_skill",length = 255,nullable = false)
-    private String normalizedSkill;
+//    private String normalizedSkill;
 
     @Column(length = 30)
     String proficiency;

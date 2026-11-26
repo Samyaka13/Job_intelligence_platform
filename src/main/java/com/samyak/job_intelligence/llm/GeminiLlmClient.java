@@ -24,8 +24,8 @@ public class GeminiLlmClient implements LlmClient {
     public String generate(String systemPrompt, String userPrompt) {
         Content content = Content.builder().role("system").parts(Part.fromText(systemPrompt)).build();
         GenerateContentConfig config = GenerateContentConfig
-                .builder().
-                systemInstruction(content)
+                .builder()
+                .systemInstruction(content)
                 .responseMimeType("application/json")
                 .responseSchema(requirementSchema.build())
                 .build();

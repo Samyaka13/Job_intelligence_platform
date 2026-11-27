@@ -144,8 +144,6 @@ Deduplication uses multiple signals:
 
    ```bash
    curl http://localhost:8080/actuator/health
-   ```
-
-> **Note:** To reset the local database volume and wipe development data, run `docker compose down -v`.
+   ```\
 
 

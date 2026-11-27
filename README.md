@@ -373,5 +373,5 @@ src/main/resources/
 - The application is a backend API; no frontend is included in this repository.
 - API authentication and authorization are not configured. Do not expose this development service publicly.
 - The Compose file starts the database only; it does not containerize the Spring Boot application.
-- Job ingestion is initiated through the API. Only matching is scheduled (default cron: 2:00 AM, using the application's configured timezone).
+- Job ingestion is initiated through the API. Only matching is scheduled (default cron: 2:00 AM, using the JVM's default timezone (no explicit scheduler timezone is configured)).
 - No application submission, email delivery, resume processing or recruiter outreach is performed yet.

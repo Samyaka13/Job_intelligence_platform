@@ -1,6 +1,8 @@
 # Job Intelligence Platform
 
-A backend-first job intelligence platform that discovers job listings, converts job descriptions into structured requirements, and ranks opportunities against a candidate profile.
+A backend-first job intelligence platform being built toward a **multi-user SaaS product**. It discovers job listings, converts job descriptions into structured requirements, and ranks opportunities against each candidate's profile.
+
+The intended source integrations are Greenhouse, Lever, Ashby and company career pages. The intended matching model is hybrid: deterministic qualification rules protect hard constraints, while an LLM provides semantic assessment for qualified opportunities. The current implementation is an early foundation for that target; the sections below distinguish shipped behavior from planned capabilities.
 
 The product objective is to improve:
 
@@ -30,9 +32,10 @@ The repository contains working backend slices for:
 
 A few distinctions are important:
 
-- **Greenhouse is the only implemented job collector.** Other source codes are seeded in the database, but that does not mean their collectors exist. Lever, Ashby, LinkedIn, Indeed, Naukri, Wellfound, email and generic career-page ingestion are not implemented as working adapters yet.
+- **Greenhouse is the only implemented job collector.** Lever, Ashby and company career-page integrations are part of the intended source roadmap, but their collectors are not implemented yet. Other source codes seeded in the database are placeholders, not evidence of working integrations.
 - **Ingestion is manually triggered through an API.** The daily scheduler recomputes matches for jobs already stored in the database; it does not fetch new jobs.
-- **Gemini is used for job-requirement extraction, not candidate/job semantic ranking.** Candidate matching currently uses deterministic application code.
+- **Gemini is currently used for job-requirement extraction, not candidate/job semantic ranking.** Candidate matching uses deterministic application code today. LLM-based semantic matching is part of the intended hybrid design, but is not yet implemented.
+- **Multi-user SaaS capabilities are not implemented yet.** There is no authentication, account/tenant model or tenant-level data isolation in the current application. The existing candidate profile API should not be treated as a secure multi-user boundary.
 - **The daily digest is returned by the API.** Email delivery, recruiter outreach, resume tailoring and application submission are not implemented.
 - The expected-interview optimization target is not yet trained on application outcomes.
 
@@ -83,9 +86,29 @@ Candidate profile + skills                 |
 
 The application is organized as a **modular monolith**. Business capabilities are separated into feature areas rather than split into independently deployed services. Microservices are not part of the current design.
 
+### Product direction: multi-user SaaS
+
+The intended product serves multiple independent candidates. Each candidate should have a private profile, skills, preferences, resume data, match history and (in later phases) application history. One candidate must never be able to read or modify another candidate's private data.
+
+A likely data boundary is:
+
+- **Shared job catalog:** employer companies, source configurations, canonical jobs, source listings and extracted job requirements. These records can be ingested once and reused across candidates.
+- **Candidate-owned data:** user account, candidate profile, skills, preferences, resumes, match results, applications and outcomes.
+
+This is a target design, not the current schema. The repository does not yet contain an account/tenant entity, authentication, authorization or tenant-scoped repository access. Those are prerequisites before onboarding multiple real users. The domain should also keep the employer **Company** (the organization posting a job) distinct from the platform's user/account or tenant concepts.
+
 ### 1. Ingestion and canonical job model
 
-A source adapter returns raw listings. The ingestion pipeline normalizes the listing and creates or updates:
+A source adapter returns raw listings. Greenhouse is the only implemented adapter at present. The intended source set is:
+
+| Source | Status |
+| --- | --- |
+| Greenhouse | Implemented |
+| Lever | Planned |
+| Ashby | Planned |
+| Company career pages | Planned; implementation may require site- or ATS-specific adapters |
+
+The ingestion pipeline normalizes the listing and creates or updates:
 
 - A **canonical job**, which contains the normalized job data.
 - A **source listing**, which retains the source, external job ID, source URL and raw source payload.
@@ -133,6 +156,18 @@ The current overall score combines:
 | Seniority fit | 15% |
 
 A missing mandatory skill applies an additional score reduction. These are current deterministic rules, not an LLM-generated relevance score.
+
+### Target matching architecture: deterministic + semantic
+
+The intended matching design is hybrid:
+
+1. **Deterministic qualification gate:** evaluate non-negotiable constraints such as location, employment type, experience and salary. A job rejected by a hard rule must not be made eligible by an LLM.
+2. **LLM semantic assessment:** evaluate only jobs that pass the qualification gate. Assess evidence-backed skill overlap, transferable experience, project relevance and contextual fit. The model should return a validated structured response, not free-form text used directly as a score.
+3. **Deterministic score aggregation:** combine the semantic result with transparent role, seniority and technical signals, then apply ranking and recommendation thresholds in application code.
+
+The LLM should not invent candidate facts or treat an unverified skill as present. Each assessment should be traceable to the candidate evidence and job requirements it used. Provider, model, prompt/schema version, evaluation timestamp and structured reasoning should be retained so results can be inspected and compared. Model failure should not silently bypass hard qualification rules.
+
+This is the target design. The current implementation has the deterministic qualification and scoring stages; it does not yet perform the LLM semantic assessment for candidate/job matching. The existing `JobMatch` model already has fields for semantic score and LLM metadata, but the current persistence mapper does not populate them.
 
 ---
 
@@ -354,8 +389,8 @@ src/main/resources/
 
 | Phase | Scope | Status |
 | --- | --- | --- |
-| **1. Job Intelligence** | Source ingestion, normalization, deduplication, requirement extraction, qualification and ranking | In progress |
-| **2. Resume Intelligence** | Resume parsing, evidence-backed candidate profile and role-specific resume customization | Planned |
+| **1. Job Intelligence** | Greenhouse ingestion, then Lever/Ashby/career-page adapters; normalization, deduplication, requirement extraction and hybrid matching | In progress |
+| **2. Multi-user foundation & Resume Intelligence** | Accounts, authentication, tenant isolation, resume parsing, evidence-backed candidate profiles and role-specific customization | Planned |
 | **3. Application Workflow** | Application preparation, form automation, answer drafting, human approval and tracking | Planned |
 | **4. Outcome Optimization** | Track interviews/offers/rejections and improve ranking from observed outcomes | Planned |
 
@@ -364,14 +399,15 @@ src/main/resources/
 ## Design principles
 
 - **Flyway owns the schema.** Migrations are versioned and applied; Hibernate validates rather than generating the schema.
-- **Candidate facts must remain truthful.** Automation must not invent skills, experience, qualifications or other candidate information.
+- **Candidate facts must remain truthful.** Automation and semantic matching must not invent skills, experience, qualifications or other candidate information.
+- **Tenant boundaries must be explicit before SaaS launch.** Shared job-market data and private candidate data have different ownership and access requirements.
 - **Prefer conservative deduplication.** A false merge can corrupt provenance and job data; uncertain duplicates should remain separate until stronger evidence is available.
 - **Keep the system a modular monolith** until operational requirements justify distributed services.
 
 ## Current operational limitations
 
 - The application is a backend API; no frontend is included in this repository.
-- API authentication and authorization are not configured. Do not expose this development service publicly.
+- API authentication, authorization and tenant isolation are not configured. Do not expose this development service publicly or use it for multiple real users yet.
 - The Compose file starts the database only; it does not containerize the Spring Boot application.
 - Job ingestion is initiated through the API. Only matching is scheduled (default cron: 2:00 AM, using the JVM's default timezone (no explicit scheduler timezone is configured)).
 - No application submission, email delivery, resume processing or recruiter outreach is performed yet.

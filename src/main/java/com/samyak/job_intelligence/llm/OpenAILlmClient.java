@@ -9,10 +9,17 @@ import com.openai.models.responses.ResponseTextConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.MDC;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.stereotype.Component;
 
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@Component
+@ConditionalOnProperty(
+        name = "llm.provider",
+        havingValue = "openAi"
+)
 public class OpenAILlmClient implements LlmClient{
 
     private static final Logger log =
@@ -22,7 +29,7 @@ public class OpenAILlmClient implements LlmClient{
     private final OpenAIRequirementSchema openAIRequirementSchema;
 
     public OpenAILlmClient(OpenAiProperties openAiProperties,OpenAIRequirementSchema openAIRequirementSchema) {
-        this.openAIClient = OpenAIOkHttpClient.fromEnv();
+        this.openAIClient = OpenAIOkHttpClient.builder().baseUrl("https://openrouter.ai/api/v1").apiKey(openAiProperties.apiKey()).build();
         this.openAiProperties = openAiProperties;
         this.openAIRequirementSchema = openAIRequirementSchema;
     }
@@ -39,7 +46,7 @@ public class OpenAILlmClient implements LlmClient{
                 .build();
 
         ResponseCreateParams responseCreateParams = ResponseCreateParams.builder()
-                .model(openAiProperties.modelName())
+                .model(openAiProperties.model())
                 .instructions(systemPrompt)
                 .input(userPrompt)
                 .text(textConfig)
@@ -71,12 +78,11 @@ public class OpenAILlmClient implements LlmClient{
                     totalTokens
             );
         });
-        String output = response.output().stream()
+        return response.output().stream()
                 .flatMap(item -> item.message().stream())
                 .flatMap(message -> message.content().stream())
                 .flatMap(content -> content.outputText().stream())
                 .map(outputText -> outputText.text())
                 .collect(Collectors.joining());
-        return output;
     }
 }

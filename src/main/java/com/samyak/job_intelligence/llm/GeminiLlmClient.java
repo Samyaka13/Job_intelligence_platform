@@ -4,9 +4,14 @@ import com.google.genai.types.Content;
 import com.google.genai.types.GenerateContentConfig;
 import com.google.genai.types.Part;
 import org.slf4j.MDC;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnProperty(
+        name = "llm.provider",
+        havingValue = "gemini"
+)
 public class GeminiLlmClient implements LlmClient {
 
     private final Client client;
